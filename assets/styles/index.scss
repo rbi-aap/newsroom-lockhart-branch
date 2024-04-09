@@ -1825,7 +1825,10 @@ article.list {
 
 .wire-articles__item__icons {
     display: contents;
-    flex-wrap: wrap;
+    // The flex-wrap property is commented out because flex: 1 is already set on the flex items.
+    // With flex: 1, the flex items will grow and shrink as needed to fit within the flex container on a single line.
+    // Uncommenting flex-wrap: wrap; would allow the flex items icons to wrap onto multiple lines, which is not desired in the article popup.
+    // flex-wrap: wrap;
     margin-bottom: 10px;
 
     @include md {

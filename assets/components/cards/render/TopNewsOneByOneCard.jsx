@@ -1,15 +1,17 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { wordCount } from 'utils';
-import { getPicture, getThumbnailRendition, getCaption } from 'wire/utils';
+import {getCaption, getPicture, getThumbnailRendition ,getVideos ,getAudio} from 'wire/utils';
 import CardRow from './CardRow';
 import CardMeta from './CardMeta';
 
 const getTopNewsPanel = (item, picture, openItem, cardId) => {
-    
+
     const rendition = getThumbnailRendition(picture, true);
     const imageUrl = rendition && rendition.href;
     const caption = rendition && getCaption(picture);
+    const audio = item && getAudio(item);
+    const video = item && getVideos(item);
 
     return (<div key={item._id} className='col-sm-12 col-md-6 d-flex mb-4'>
         <div className='card card--home' onClick={() => openItem(item, cardId)}>
@@ -17,6 +19,8 @@ const getTopNewsPanel = (item, picture, openItem, cardId) => {
             <div className='card-body'>
                 <h4 className='card-title'>{item.headline}</h4>
                 <CardMeta
+                    audioIf ={audio}
+                    videoIf = {video}
                     pictureAvailable={!!picture}
                     wordCount={wordCount(item)}
                     source={item.source}

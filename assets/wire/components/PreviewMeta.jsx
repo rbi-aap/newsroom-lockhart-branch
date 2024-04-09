@@ -1,14 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {gettext, wordCount, isDisplayed, characterCount} from 'utils';
-import { getPicture } from 'wire/utils';
+import { getPicture, getVideos ,getAudio} from 'wire/utils';
+import {isEmpty} from 'lodash';
 
 const DEFAULT_URGENCY = 4;
-
-
-
 function PreviewMeta({item, isItemDetail, inputRef, displayConfig}) {
     const picture = getPicture(item);
+    const audio = item && getAudio(item);
+    const video = item && getVideos(item);
     const onClick = () => {
         const previousVersions = document.getElementById(inputRef);
         previousVersions && previousVersions.scrollIntoView();
@@ -27,6 +27,16 @@ function PreviewMeta({item, isItemDetail, inputRef, displayConfig}) {
                         <i className='icon--photo icon--gray-light'></i>
                     </span>
                 )}
+                {!isEmpty(video) &&
+                <span className='wire-articles__item__icon'>
+                    <i className='icon--video icon--gray-light'></i>
+                </span>
+                }
+                {!isEmpty(audio) &&
+                <span className='wire-articles__item__icon'>
+                    <i className='icon--audio icon--gray-light'></i>
+                </span>
+                }
             </div>
             <div className='wire-articles__item__meta-info'>
                 {isDisplayed('urgency', displayConfig) &&
