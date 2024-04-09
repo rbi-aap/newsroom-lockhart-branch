@@ -11,4 +11,4 @@ urllib3<1.26
 
 -e .
 git+https://github.com/superdesk/superdesk-planning.git@v1.33.3#egg=superdesk-planning
-git+https://github.com/superdesk/superdesk-core.git@hotfix/1.33.16/#egg=Superdesk-Core
+git+https://github.com/superdesk/superdesk-core.git@hotfix/1.33.17/#egg=Superdesk-Core
