@@ -6,7 +6,7 @@ function CardFooter({wordCount, pictureAvailable, source, versioncreated, audioA
     return (<div className="card-footer">
         <CardMeta
             audio={audioAvailable}
-            video = {videoAvailable}
+            video={videoAvailable}
             pictureAvailable={pictureAvailable}
             wordCount={wordCount}
             source={source}
