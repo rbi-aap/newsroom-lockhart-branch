@@ -18,8 +18,8 @@ const getPictureTextPanel = (item, picture, openItem, cardId) => {
             <img className="card-img-top" src={imageUrl} alt={caption} />
             <CardBody item={item} displaySource={false} />
             <CardFooter
-                audioAvailable ={audio}
-                videoAvailable = {video}
+                audioAvailable={audio}
+                videoAvailable={video}
                 wordCount={wordCount(item)}
                 pictureAvailable={!!picture}
                 source={item.source}

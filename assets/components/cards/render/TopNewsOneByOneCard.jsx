@@ -19,8 +19,8 @@ const getTopNewsPanel = (item, picture, openItem, cardId) => {
             <div className='card-body'>
                 <h4 className='card-title'>{item.headline}</h4>
                 <CardMeta
-                    audioAvailable ={audio}
-                    videoAvailable = {video}
+                    audioAvailable={audio}
+                    videoAvailable={video}
                     pictureAvailable={!!picture}
                     wordCount={wordCount(item)}
                     source={item.source}

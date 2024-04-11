@@ -23,8 +23,8 @@ const getTopNewsLeftPanel = (item, picture, openItem, cardId) => {
             <div className='card-body'>
                 <h2 className='card-title'>{item.headline}</h2>
                 <CardMeta
-                    audio ={audio}
-                    video = {video}
+                    audio={audio}
+                    video={video}
                     pictureAvailable={!!picture}
                     wordCount={wordCount(item)}
                     source={item.source}

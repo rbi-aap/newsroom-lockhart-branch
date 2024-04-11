@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import CardMeta from './CardMeta';
 
-function CardFooter({wordCount, pictureAvailable, source, versioncreated, audioAvailable,videoAvailable }) {
+function CardFooter({wordCount, pictureAvailable, source, versioncreated, audioAvailable, videoAvailable}) {
     return (<div className="card-footer">
         <CardMeta
             audio={audioAvailable}
