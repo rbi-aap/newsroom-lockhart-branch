@@ -2,11 +2,11 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import CardMeta from './CardMeta';
 
-function CardFooter({wordCount, pictureAvailable, source, versioncreated, audioIf,videoIf }) {
+function CardFooter({wordCount, pictureAvailable, source, versioncreated, audioAvailable,videoAvailable }) {
     return (<div className="card-footer">
         <CardMeta
-            audio={audioIf}
-            video = {videoIf}
+            audio={audioAvailable}
+            video = {videoAvailable}
             pictureAvailable={pictureAvailable}
             wordCount={wordCount}
             source={source}
@@ -21,12 +21,12 @@ CardFooter.propTypes = {
     pictureAvailable: PropTypes.bool,
     source: PropTypes.string,
     versioncreated: PropTypes.string,
-    audioIf: PropTypes.array,
-    videoIf: PropTypes.array,
+    audioAvailable: PropTypes.array,
+    videoAvailable: PropTypes.array,
 };
 CardFooter.defaultProps = {
-    audioIf: [],
-    videoIf: [],
+    audioAvailable: [],
+    videoAvailable: [],
 };
 
 export default CardFooter;

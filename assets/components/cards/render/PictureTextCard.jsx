@@ -20,8 +20,8 @@ const getPictureTextPanel = (item, picture, openItem, withPictures, cardId) => {
             }
             <CardBody item={item} displayMeta={false} />
             <CardFooter
-                audioIf ={audio}
-                videoIf = {video}
+                audioAvailable ={audio}
+                videoAvailable = {video}
                 caption={caption}
                 wordCount={wordCount(item)}
                 pictureAvailable={!!rendition}

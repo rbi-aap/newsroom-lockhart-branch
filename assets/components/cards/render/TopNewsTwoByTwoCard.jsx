@@ -54,8 +54,8 @@ const getTopNewsRightPanel = (item, picture, openItem, cardId) => {
             <img className='card-img-top' src={imageUrl} alt={caption} />
             <CardBody item={item} displayDescription={false} displaySource={false}/>
             <CardFooter
-                audioIf ={audio}
-                videoIf = {video}
+                audioAvailable ={audio}
+                videoAvailable = {video}
                 wordCount={wordCount(item)}
                 pictureAvailable={!!picture}
                 source={item.source}
