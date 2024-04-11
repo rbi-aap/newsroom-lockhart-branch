@@ -11,7 +11,6 @@ function CardFooter({wordCount, pictureAvailable, source, versioncreated, audioA
             wordCount={wordCount}
             source={source}
             versioncreated={versioncreated}
-
         />
     </div>);
 }
