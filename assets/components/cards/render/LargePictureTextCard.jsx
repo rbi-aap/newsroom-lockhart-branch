@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {wordCount} from 'utils';
-import {getCaption, getPicture, getThumbnailRendition} from 'wire/utils';
+import {getCaption, getPicture, getThumbnailRendition ,getVideos ,getAudio} from 'wire/utils';
 import CardFooter from './CardFooter';
 import CardBody from './CardBody';
 import CardRow from './CardRow';
@@ -10,12 +10,16 @@ const getPictureTextPanel = (item, picture, openItem, cardId) => {
     const rendition = getThumbnailRendition(picture);
     const imageUrl = rendition && rendition.href;
     const caption = rendition && getCaption(picture);
+    const audio = item && getAudio(item);
+    const video = item && getVideos(item);
 
     return (<div key={item._id} className="col-sm-6 col-lg-4 d-flex mb-4">
         <div className="card card--home" onClick={() => openItem(item, cardId)}>
             <img className="card-img-top" src={imageUrl} alt={caption} />
             <CardBody item={item} displaySource={false} />
             <CardFooter
+                audioAvailable={audio}
+                videoAvailable={video}
                 wordCount={wordCount(item)}
                 pictureAvailable={!!picture}
                 source={item.source}

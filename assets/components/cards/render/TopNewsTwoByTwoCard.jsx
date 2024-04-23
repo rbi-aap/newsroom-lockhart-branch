@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {wordCount, getSlugline} from 'utils';
-import { getPicture, getThumbnailRendition, getCaption } from 'wire/utils';
+import {getPicture, getThumbnailRendition, getCaption, getAudio, getVideos} from 'wire/utils';
 import CardRow from './CardRow';
 import CardFooter from './CardFooter';
 import CardMeta from './CardMeta';
@@ -12,6 +12,8 @@ const getTopNewsLeftPanel = (item, picture, openItem, cardId) => {
     const rendition = getThumbnailRendition(picture, true);
     const imageUrl = rendition && rendition.href;
     const caption = rendition && getCaption(picture);
+    const audio = item && getAudio(item);
+    const video = item && getVideos(item);
 
     return (<div key={item._id} className='col-sm-6 col-md-9 d-flex mb-4'>
         <div className='card card--home card--horizontal' onClick={() => openItem(item, cardId)}>
@@ -21,6 +23,8 @@ const getTopNewsLeftPanel = (item, picture, openItem, cardId) => {
             <div className='card-body'>
                 <h2 className='card-title'>{item.headline}</h2>
                 <CardMeta
+                    audio={audio}
+                    video={video}
                     pictureAvailable={!!picture}
                     wordCount={wordCount(item)}
                     source={item.source}
@@ -42,12 +46,16 @@ const getTopNewsRightPanel = (item, picture, openItem, cardId) => {
     const rendition = getThumbnailRendition(picture);
     const imageUrl = rendition && rendition.href;
     const caption = rendition && getCaption(picture);
+    const audio = item && getAudio(item);
+    const video = item && getVideos(item);
 
     return (<div key={item._id} className='col-sm-6 col-md-3 d-flex mb-4'>
         <div className='card card--home' onClick={() => openItem(item, cardId)}>
             <img className='card-img-top' src={imageUrl} alt={caption} />
             <CardBody item={item} displayDescription={false} displaySource={false}/>
             <CardFooter
+                audioAvailable ={audio}
+                videoAvailable = {video}
                 wordCount={wordCount(item)}
                 pictureAvailable={!!picture}
                 source={item.source}
