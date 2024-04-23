@@ -2,16 +2,50 @@ import bcrypt
 from flask import current_app as app, session
 
 import newsroom
+import superdesk
+from flask import request
 from content_api import MONGO_PREFIX
 from superdesk.utils import is_hashed, get_hash
-from newsroom.auth import get_user_id
+from newsroom.auth import get_user, get_user_id, SessionAuth
 from newsroom.utils import set_original_creator, set_version_creator
+from newsroom.user_roles import UserRole
+
+
+class UserAuthentication(SessionAuth):
+    def authorized(self, allowed_roles, resource, method):
+        if super().authorized(allowed_roles, resource, method):
+            return True
+
+        if not get_user_id():
+            return False
+
+        if not request.view_args or not request.view_args.get("_id"):
+            # not a request for a specific user, stop
+            return False
+
+        if request.view_args["_id"] == str(get_user_id()):
+            # current user editing current user
+            return True
+
+        current_user = get_user()
+        if not current_user.get("company") or current_user.get("user_type") != UserRole.COMPANY_ADMIN.value:
+            # current user not a company admin
+            return False
+
+        request_user = superdesk.get_resource_service("users").find_one(req=None, _id=request.view_args["_id"])
+        if request_user.get("company") and request_user["company"] == current_user["company"]:
+            # if current user is a company admin for request user
+            return True
+
+        return False
 
 
 class UsersResource(newsroom.Resource):
     """
     Users schema
     """
+
+    authentication = UserAuthentication()
 
     schema = {
         'password': {
@@ -96,7 +130,7 @@ class UsersResource(newsroom.Resource):
     mongo_prefix = MONGO_PREFIX
     datasource = {
         'source': 'users',
-        'projection': {'password': 0},
+        'projection': {'password': 0, 'token': 0},
         'default_sort': [('last_name', 1)]
     }
     mongo_indexes = {
@@ -144,3 +178,22 @@ class UsersService(newsroom.Service):
 
     def on_deleted(self, doc):
         app.cache.delete(str(doc.get('_id')))
+
+
+class AuthUserResource(newsroom.Resource):
+    internal_resource = True
+
+    schema = {
+        "email": UsersResource.schema["email"],
+        "password": UsersResource.schema["password"],
+        "token": UsersResource.schema["token"],
+        "token_expiry_date": UsersResource.schema["token_expiry_date"],
+    }
+
+    datasource = {
+        "source": "users",
+    }
+
+
+class AuthUserService(newsroom.Service):
+    pass

@@ -19,6 +19,7 @@ from newsroom.search import BaseSearchService, SearchQuery, query_string
 from newsroom.auth import get_user
 from newsroom.companies import get_user_company
 from newsroom.products.products import get_products_by_company
+from newsroom.user_roles import UserRole
 
 
 logger = logging.getLogger(__name__)
@@ -52,6 +53,9 @@ class WireSearchResource(newsroom.Resource):
 
     item_methods = ['GET']
     resource_methods = ['GET']
+
+    allowed_roles = [role for role in UserRole]
+    allowed_item_roles = allowed_roles
 
 
 def versioncreated_range(created):

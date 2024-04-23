@@ -1,6 +1,7 @@
 
 import newsroom
 import superdesk
+from newsroom.user_roles import UserRole
 
 
 class TopicsResource(newsroom.Resource):
@@ -22,6 +23,8 @@ class TopicsResource(newsroom.Resource):
             'schema': {'type': 'string'},
         }
     }
+    allowed_roles = [role for role in UserRole]
+    allowed_item_roles = allowed_roles
 
 
 class TopicsService(newsroom.Service):
