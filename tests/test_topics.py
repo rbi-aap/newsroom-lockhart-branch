@@ -1,8 +1,9 @@
 from flask import json
-from newsroom.topics.views import get_topic_url
 from .fixtures import init_company, PUBLIC_USER_ID, TEST_USER_ID  # noqa
 from unittest import mock
 from .utils import mock_send_email
+from newsroom.topics.views import get_topic_url
+
 
 topic = {
     'label': 'Foo',
@@ -36,6 +37,7 @@ def test_post_topic_user(client):
     with client as app:
         with client.session_transaction() as session:
             session['user'] = user_id
+            session['user_type'] = 'administrator'
         resp = app.post(
             topics_url,
             data=json.dumps(topic),
@@ -52,6 +54,7 @@ def test_update_topic_fails_for_different_user(client):
     with client as app:
         with client.session_transaction() as session:
             session['user'] = user_id
+            session['user_type'] = 'administrator'
         resp = app.post(
             topics_url,
             data=json.dumps(topic),
@@ -74,6 +77,7 @@ def test_update_topic(client):
     with client as app:
         with client.session_transaction() as session:
             session['user'] = user_id
+            session['user_type'] = 'administrator'
         resp = app.post(
             topics_url,
             data=json.dumps(topic),
@@ -99,6 +103,7 @@ def test_delete_topic(client):
     with client as app:
         with client.session_transaction() as session:
             session['user'] = user_id
+            session['user_type'] = 'administrator'
         resp = app.post(
             topics_url,
             data=json.dumps(topic),
