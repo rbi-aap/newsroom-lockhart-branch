@@ -4,12 +4,11 @@ from superdesk import get_resource_service
 from lxml import etree
 from lxml.etree import SubElement
 from superdesk.utc import utcnow
-from flask import current_app as app, g, request, Response, url_for, make_response,jsonify
-from eve.utils import ParsedRequest
+from flask import current_app as app, g, Response, url_for
 import logging
 from newsroom.news_api.utils import check_featuremedia_association_permission, update_embed_urls
 from newsroom.wire.formatters.utils import remove_unpermissioned_embeds
-from datetime import datetime, timezone, timedelta
+from datetime import timedelta
 from email import utils
 
 
@@ -38,7 +37,7 @@ class NewsAPISyndicateService(NewsAPINewsService):
         doc['_links']['parent'] = {
             'title': 'Home',
             'href': '/'
-        }
+        },
         self._hateoas_set_item_links(doc)
 
     def _hateoas_set_item_links(self, doc):
@@ -52,6 +51,7 @@ class NewsAPISyndicateService(NewsAPINewsService):
             item.pop('_updated', None)
             item.pop('_created', None)
             item.pop('_etag', None)
+
     def prefill_search_query(self, search, req=None, lookup=None):
         super().prefill_search_query(search, req, lookup)
 
@@ -132,7 +132,7 @@ class NewsAPISyndicateService(NewsAPINewsService):
                 if complete_item.get('byline'):
                     name = complete_item.get('byline')
                     if complete_item.get('source') and not app.config['COPYRIGHT_HOLDER'].lower() == complete_item.get(
-                        'source', '').lower():
+                            'source', '').lower():
                         name = name + " - " + complete_item.get('source')
                     SubElement(SubElement(entry, 'author'), 'name').text = name
                 else:
@@ -179,18 +179,18 @@ class NewsAPISyndicateService(NewsAPINewsService):
                         SubElement(media, etree.QName(_message_nsmap.get('media'), 'text')).text = metadata.get(
                             'body_text')
                         if image.get('poi'):
-                                focr = SubElement(media, etree.QName(_message_nsmap.get('mi'), 'focalRegion'))
-                                SubElement(focr, etree.QName(_message_nsmap.get('mi'), 'x1')).text = str(
-                                    image.get('poi').get('x'))
-                                SubElement(focr, etree.QName(_message_nsmap.get('mi'), 'x2')).text = str(
-                                    image.get('poi').get('x'))
-                                SubElement(focr, etree.QName(_message_nsmap.get('mi'), 'y1')).text = str(
-                                    image.get('poi').get('y'))
-                                SubElement(focr, etree.QName(_message_nsmap.get('mi'), 'y2')).text = str(
-                                    image.get('poi').get('y'))
+                            focr = SubElement(media, etree.QName(_message_nsmap.get('mi'), 'focalRegion'))
+                            SubElement(focr, etree.QName(_message_nsmap.get('mi'), 'x1')).text = str(
+                                image.get('poi').get('x'))
+                            SubElement(focr, etree.QName(_message_nsmap.get('mi'), 'x2')).text = str(
+                                image.get('poi').get('x'))
+                            SubElement(focr, etree.QName(_message_nsmap.get('mi'), 'y1')).text = str(
+                                image.get('poi').get('y'))
+                            SubElement(focr, etree.QName(_message_nsmap.get('mi'), 'y2')).text = str(
+                                image.get('poi').get('y'))
             except Exception as ex:
-                 __class__.handle_exception(item, ex)
-                 continue
+                __class__.handle_exception(item, ex)
+                continue
         return Response(XML_ROOT + etree.tostring(feed, method='xml', pretty_print=True).decode('utf-8'),
                         mimetype='application/atom+xml')
 
@@ -245,8 +245,8 @@ class NewsAPISyndicateService(NewsAPINewsService):
                 if complete_item.get('byline'):
                     name = complete_item.get('byline')
                     if complete_item.get('source') and not app.config[
-                                                               'COPYRIGHT_HOLDER'].lower() == complete_item.get(
-                        'source', '').lower():
+                            'COPYRIGHT_HOLDER'].lower() == complete_item.get(
+                            'source', '').lower():
                         name = name + " - " + complete_item.get('source')
                     SubElement(entry, etree.QName(_message_nsmap.get('dc'), 'creator')).text = name
                 else:
@@ -272,9 +272,9 @@ class NewsAPISyndicateService(NewsAPINewsService):
                                                                       utcnow() - timedelta(days=30)))
 
                 categories = [{'name': s.get('name')} for s in complete_item.get('service', [])] \
-                             + [{'name': s.get('name')} for s in complete_item.get('subject', [])] \
-                             + [{'name': s.get('name')} for s in complete_item.get('place', [])] \
-                             + [{'name': k} for k in complete_item.get('keywords', [])]
+                    + [{'name': s.get('name')} for s in complete_item.get('subject', [])] \
+                    + [{'name': s.get('name')} for s in complete_item.get('place', [])] \
+                    + [{'name': k} for k in complete_item.get('keywords', [])]
                 for category in categories:
                     SubElement(entry, 'category').text = category.get('name')
 
@@ -316,8 +316,8 @@ class NewsAPISyndicateService(NewsAPINewsService):
                         SubElement(focr, etree.QName(_message_nsmap.get('mi'), 'y2')).text = str(
                             image.get('poi').get('y'))
             except Exception as ex:
-                    __class__.handle_exception(item, ex)
-                    continue
+                __class__.handle_exception(item, ex)
+                continue
         return Response(XML_ROOT + etree.tostring(feed, method='xml', pretty_print=True).decode('utf-8'),
                         mimetype='application/rss+xml')
 
@@ -326,5 +326,3 @@ class NewsAPISyndicateService(NewsAPINewsService):
         item_id = item.get('_id')
         log_message = f"Processing {item_id} - {str(ex)}"
         logging.exception(log_message)
-
-

@@ -13,7 +13,7 @@ from newsroom.template_filters import (
     datetime_short, datetime_long, time_short, date_short,
     plain_text, word_count, char_count, date_header
 )
-from flask import request, make_response, json, g, jsonify, Config
+from flask import request, make_response, jsonify, Config
 
 from newsroom.news_api.news.syndicate.service import NewsAPISyndicateService
 from typing import Dict, Union, Mapping, Optional
@@ -117,6 +117,7 @@ def create_app(config=None):
             return jsonify(data)
         else:
             raise ValueError("Invalid formatter specified")
+
     def handle_unsupported_format(data, token, formatter):
         error_message = f"Unsupported formatter: {formatter}"
         error_response = make_response(jsonify({'error': error_message}), 400)
@@ -126,10 +127,11 @@ def create_app(config=None):
         lambda: {'handler': handle_unsupported_format, 'content_type': 'application/json'},
         {
             'ATOM': {'handler': convert_to_syndicate, 'content_type': 'application/xml'},
-            'RSS':  {'handler': convert_to_syndicate, 'content_type': 'application/xml'},
+            'RSS': {'handler': convert_to_syndicate, 'content_type': 'application/xml'},
             'JSON': {'handler': convert_to_syndicate, 'content_type': 'application/json'},
         }
     )
+
     @app.after_request
     def process_response(response):
         if 'news/syndicate' in request.url:
@@ -157,6 +159,7 @@ def create_app(config=None):
         # Unconditionally add rate limit headers
         add_rate_limit_headers(response)
         return response
+
     def get_auth_token() -> Optional[str]:
         token = request.args.get('token')
         if token:
@@ -165,6 +168,7 @@ def create_app(config=None):
         if auth_header and auth_header.startswith('Bearer '):
             return auth_header[len('Bearer '):]
         return request.headers.get('token')
+
     def get_response_data(response):
         try:
             return json.loads(response.data)  # Eve response
@@ -218,6 +222,8 @@ def create_app(config=None):
         return jsonify(error_payload)
 
     return app
+
+
 app = create_app()
 
 if __name__ == '__main__':
