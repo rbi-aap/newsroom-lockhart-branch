@@ -104,7 +104,7 @@ class NewsroomNewsAPI(NewsroomApp):
         self.register_error_handler(Exception, base_exception_error)
 
 
-def create_app(config=None):
+def get_app(config=None):
     app = NewsroomNewsAPI(__name__, config=config)
 
     def convert_to_syndicate(data, token, formatter):
@@ -227,7 +227,7 @@ def create_app(config=None):
     return app
 
 
-app = create_app()
+app = get_app()
 
 if __name__ == '__main__':
     host = '0.0.0.0'
