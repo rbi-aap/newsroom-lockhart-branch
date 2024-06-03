@@ -214,7 +214,10 @@ def create_app(config=None):
             "usage": {
                 "endpoint": str(request.url),
                 "method": request.method,
-                "description": "This API endpoint allows you to retrieve news items in different formats (JSON, ATOM, RSS).",
+                "description": (
+                    "This API endpoint allows you to retrieve news items in different formats "
+                    "(JSON, ATOM, RSS)."
+                ),
                 "parameters": syndicate_examples(),
                 "examples": syndicate_parameters(),
             },
