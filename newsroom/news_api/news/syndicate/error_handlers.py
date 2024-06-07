@@ -1,4 +1,4 @@
-from typing import Union, Mapping, Dict, OrderedDict
+from typing import Union, Mapping, Dict
 from flask import request, make_response, jsonify
 
 
@@ -13,22 +13,22 @@ def process_error_response(response):
         'utf-8') if response.data else 'error message empty,contact admin for log information'
 
     def syndicate_examples() -> Mapping[str, str]:
-        examples = OrderedDict([
-            ('json', (
+        examples = {
+            'json': (
                 f"{request.url_root}news/syndicate?format=json&q=trump&start_date=2020-04-01"
                 f"&timezone=Australia/Sydney"
-            )),
-            ('atom', (
+            ),
+            'atom': (
                 f"{request.url_root}news/syndicate?format=atom&start_date=now-30d&end_date=now"
                 f"&timezone=Australia/Sydney&include_fields=headline,byline,slugline,description_html,"
                 f"located,keywords,source,subject,place,wordcount,charcount,body_html,readtime,profile,"
                 f"service,genre,associations"
-            )),
-            ('rss', (
+            ),
+            'rss': (
                 f"{request.url_root}news/syndicate?format=rss&exclude_fields=version,versioncreated,"
                 f"firstcreated"
-            ))
-        ])
+            )
+        }
         return examples
 
     def syndicate_parameters() -> Dict[str, str]:
