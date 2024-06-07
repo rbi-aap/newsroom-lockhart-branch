@@ -1,11 +1,11 @@
 import os
 import logging
-import jinja2
 import flask
-import json
+import jinja2
+
 from werkzeug.exceptions import HTTPException
 from superdesk.errors import SuperdeskApiError
-from collections import defaultdict
+
 from newsroom.factory import NewsroomApp
 from newsroom.news_api.api_tokens import CompanyTokenAuth
 from superdesk.utc import utcnow
@@ -13,10 +13,6 @@ from newsroom.template_filters import (
     datetime_short, datetime_long, time_short, date_short,
     plain_text, word_count, char_count, date_header
 )
-from flask import request, make_response, jsonify, Config
-
-from newsroom.news_api.news.syndicate.service import NewsAPISyndicateService
-from typing import Dict, Union, Mapping, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +24,7 @@ class NewsroomNewsAPI(NewsroomApp):
 
     def __init__(self, import_name=__package__, config=None, **kwargs):
         if not getattr(self, 'settings'):
-            self.settings = Config('.')
+            self.settings = flask.Config('.')
 
         super(NewsroomNewsAPI, self).__init__(import_name=import_name, config=config, **kwargs)
 
@@ -64,7 +60,7 @@ class NewsroomNewsAPI(NewsroomApp):
         def handle_werkzeug_errors(err):
             return json_error({
                 'error': str(err),
-                'message': getattr(err, 'description', 'An error occurred'),
+                'message': getattr(err, 'description') or None,
                 'code': getattr(err, 'code') or 500
             })
 
@@ -107,122 +103,16 @@ class NewsroomNewsAPI(NewsroomApp):
 def get_app(config=None):
     app = NewsroomNewsAPI(__name__, config=config)
 
-    def convert_to_syndicate(data, token, formatter):
-        # remove token paramerters from requirments
-        if formatter and formatter == 'ATOM':
-            return NewsAPISyndicateService.generate_atom_feed(data)
-        elif formatter and formatter == 'RSS':
-            return NewsAPISyndicateService.generate_rss_feed(data)
-        elif formatter and formatter == 'JSON':
-            return jsonify(data)
-        else:
-            raise ValueError("Invalid formatter specified")
-
-    def handle_unsupported_format(data, token, formatter):
-        error_message = f"Unsupported formatter: {formatter}"
-        error_response = make_response(jsonify({'error': error_message}), 400)
-        return process_error_response(error_response)
-
-    FORMAT_HANDLERS = defaultdict(
-        lambda: {'handler': handle_unsupported_format, 'content_type': 'application/json'},
-        {
-            'ATOM': {'handler': convert_to_syndicate, 'content_type': 'application/xml'},
-            'RSS': {'handler': convert_to_syndicate, 'content_type': 'application/xml'},
-            'JSON': {'handler': convert_to_syndicate, 'content_type': 'application/json'},
-        }
-    )
-
     @app.after_request
-    def process_response(response):
-        if 'news/syndicate' in request.url:
-            if response.status_code >= 400:
-                return process_error_response(response)
-
-            format_param = request.args.get('formatter')
-            if format_param:
-                format_param = format_param.upper().strip()
-                try:
-                    format_handler = FORMAT_HANDLERS.get(format_param)
-                    if format_handler:
-                        token = get_auth_token()
-                        response_data = get_response_data(response)
-                        response = format_handler['handler'](response_data, token, format_param)
-                    else:
-                        error_message = f"Unsupported formatter: {format_param}"
-                        error_response = make_response(jsonify({'error': error_message}), 400)
-                        return process_error_response(error_response)
-                except ValueError as e:
-                    error_message = f"An error occurred in converting response to {format_param}: {e}"
-                    error_response = make_response(jsonify({'error': error_message}), 400)
-                    return process_error_response(error_response)
-
-        # Unconditionally add rate limit headers
-        add_rate_limit_headers(response)
-        return response
-
-    def get_auth_token() -> Optional[str]:
-        token = request.args.get('token')
-        if token:
-            return token
-        auth_header = request.headers.get('Authorization')
-        if auth_header and auth_header.startswith('Bearer '):
-            return auth_header[len('Bearer '):]
-        return request.headers.get('token')
-
-    def get_response_data(response):
-        try:
-            return json.loads(response.data)  # Eve response
-        except (AttributeError, json.JSONDecodeError):
-            try:
-                return response.get_json()  # Flask response
-            except (AttributeError, ValueError) as e:
-                error_message = f"Unable to parse response data: {e}"
-                error_response = make_response(jsonify({'error': error_message}), 400)
-                return process_error_response(error_response)
-
-    def add_rate_limit_headers(response):
+    def after_request(response):
         if flask.g.get('rate_limit_requests'):
-            remaining = app.config.get('RATE_LIMIT_REQUESTS') - flask.g.get('rate_limit_requests')
-            response.headers.add('X-RateLimit-Remaining', remaining)
+            response.headers.add('X-RateLimit-Remaining',
+                                 app.config.get('RATE_LIMIT_REQUESTS') - flask.g.get('rate_limit_requests'))
             response.headers.add('X-RateLimit-Limit', app.config.get('RATE_LIMIT_REQUESTS'))
 
             if flask.g.get('rate_limit_expiry'):
-                reset_time = (flask.g.get('rate_limit_expiry') - utcnow()).seconds
-                response.headers.add('X-RateLimit-Reset', reset_time)
-
-    def process_error_response(response):
-        error_message: Union[bytes, str] = response.data.decode(
-            'utf-8') if response.data else 'error message empty,contact admin for log information'
-
-        def syndicate_examples():
-            return {
-                'json': f"{request.url_root}news/syndicate?formatter=json",
-                'atom': f"{request.url_root}news/syndicate?formatter=atom",
-                'rss': f"{request.url_root}news/syndicate?formatter=rss"
-            }
-
-        def syndicate_parameters():
-            return {
-                'format': "Specifies the desired format of the response. Accepts 'json', 'atom', or 'rss' unitl now."
-            }
-
-        error_payload: Dict[str, Dict[str, Union[int, str, Dict[str, str], Mapping[str, str]]]] = {
-            "error": {
-                "code": response.status_code,
-                "message": error_message,
-            },
-            "usage": {
-                "endpoint": str(request.url),
-                "method": request.method,
-                "description": (
-                    "This API endpoint allows you to retrieve news items in different formats "
-                    "(JSON, ATOM, RSS)."
-                ),
-                "parameters": syndicate_examples(),
-                "examples": syndicate_parameters(),
-            },
-        }
-        return jsonify(error_payload)
+                response.headers.add('X-RateLimit-Reset', (flask.g.get('rate_limit_expiry') - utcnow()).seconds)
+        return response
 
     return app
 

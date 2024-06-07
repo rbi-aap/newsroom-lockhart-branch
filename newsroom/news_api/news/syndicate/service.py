@@ -17,12 +17,12 @@ class NewsAPISyndicateService(NewsAPINewsService):
     allowed_params = {
         'start_date', 'end_date',
         'include_fields', 'exclude_fields',
-        'max_results', 'page_size', 'page',
-        'version', 'where',
+        'max_results', 'page_size', 'page', 'timezone',
+        'version', 'where', 'item_source',
         'q', 'default_operator', 'filter',
         'service', 'subject', 'genre', 'urgency',
         'priority', 'type', 'item_source', 'timezone', 'products',
-        'exclude_ids', 'formatter'
+        'exclude_ids', 'formatter', 'sort'
     }
     default_sort = [{'versioncreated': 'asc'}]
 
