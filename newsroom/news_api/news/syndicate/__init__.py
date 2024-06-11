@@ -8,10 +8,17 @@ from .auth import authenticate
 from .syndicate_handlers import FORMAT_HANDLERS, FEED_GENERATORS as FORMAT_HANDLERS_INIT
 from .resource import NewsAPISyndicateResource
 from .service import NewsAPISyndicateService
+from werkzeug.routing import BaseConverter
 
 blueprint = superdesk.Blueprint('syndicate', __name__)
 
 logger = logging.getLogger(__name__)
+
+
+class RegExConverter(BaseConverter):
+    def __init__(self, map, regex='[^/]+'):
+        super().__init__(map)
+        self.regex = regex
 
 
 def get_feed(syndicate_formatter, token=None):
@@ -23,8 +30,8 @@ def get_feed(syndicate_formatter, token=None):
     return generate_feed(syndicate_formatter)
 
 
-@blueprint.route('/<string:syndicate_type>', methods=['GET'])
-@blueprint.route('/<string:syndicate_type>/<path:token>', methods=['GET'])
+@blueprint.route('/<regex("atom|rss"):syndicate_type>', methods=['GET'])
+@blueprint.route('/<regex("atom|rss"):syndicate_type>/<path:token>', methods=['GET'])
 @authenticate
 def get_syndicate_feed(syndicate_type, token=None):
     return get_feed(syndicate_type, token)
@@ -33,6 +40,7 @@ def get_syndicate_feed(syndicate_type, token=None):
 def init_app(app):
 
     superdesk.register_resource('news/syndicate', NewsAPISyndicateResource, NewsAPISyndicateService, _app=app)
+    app.url_map.converters['regex'] = RegExConverter
     superdesk.blueprint(blueprint, app)
 
     @app.after_request
