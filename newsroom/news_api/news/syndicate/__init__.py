@@ -21,20 +21,12 @@ class RegExConverter(BaseConverter):
         self.regex = regex
 
 
-def get_feed(syndicate_formatter, token=None):
-
-    def generate_feed(syndicate_formatter):
-        response = get_internal('news/search')
-        return FORMAT_HANDLERS_INIT[syndicate_formatter.lower()](response[0])
-
-    return generate_feed(syndicate_formatter)
-
-
 @blueprint.route('/<regex("atom|rss"):syndicate_type>', methods=['GET'])
 @blueprint.route('/<regex("atom|rss"):syndicate_type>/<path:token>', methods=['GET'])
 @authenticate
 def get_syndicate_feed(syndicate_type, token=None):
-    return get_feed(syndicate_type, token)
+    response = get_internal('news/search')
+    return FORMAT_HANDLERS_INIT[syndicate_type.lower()](response[0])
 
 
 def init_app(app):
