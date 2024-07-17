@@ -8,5 +8,5 @@ class NewsAPISyndicateResource(Resource):
         'source': 'items',
     }
 
-    item_methods = ['GET']
-    resource_methods = ['GET']
+    item_methods = []
+    resource_methods = []

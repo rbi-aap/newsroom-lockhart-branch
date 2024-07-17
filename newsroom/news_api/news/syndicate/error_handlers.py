@@ -15,17 +15,17 @@ def process_error_response(response):
     def syndicate_examples() -> Mapping[str, str]:
         examples = {
             'json': (
-                f"{request.url_root}news/syndicate?format=json&q=trump&start_date=2020-04-01"
+                f"{request.url_root}syndicate?format=json&q=trump&start_date=2020-04-01"
                 f"&timezone=Australia/Sydney"
             ),
             'atom': (
-                f"{request.url_root}news/syndicate?format=atom&start_date=now-30d&end_date=now"
+                f"{request.url_root}syndicate?format=atom&start_date=now-30d&end_date=now"
                 f"&timezone=Australia/Sydney&include_fields=headline,byline,slugline,description_html,"
                 f"located,keywords,source,subject,place,wordcount,charcount,body_html,readtime,profile,"
                 f"service,genre,associations"
             ),
             'rss': (
-                f"{request.url_root}news/syndicate?format=rss&exclude_fields=version,versioncreated,"
+                f"{request.url_root}syndicate?format=rss&exclude_fields=version,versioncreated,"
                 f"firstcreated"
             )
         }

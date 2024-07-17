@@ -34,6 +34,8 @@ FEED_GENERATORS = defaultdict(
 
 
 def handle_unsupported_format(data, formatter=None):
-    error_message = f"Unsupported formatter: {formatter if formatter is not None else ''} "
-    error_response = make_response(jsonify({'error': error_message}), 400)
-    return process_error_response(error_response)
+    if formatter and formatter != 'JSON':
+        error_message = f"Unsupported formatter: {formatter if formatter is not None else 'empty value'} "
+        error_response = make_response(jsonify({'error': error_message}), 400)
+        return process_error_response(error_response)
+    return jsonify(data)

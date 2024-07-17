@@ -30,7 +30,7 @@ Feature: News API Syndicate ATOM Search
         "product_type": "news_api"
         }]
         """
-        When we get "news/syndicate?formatter=atom"
+        When we get "syndicate?formatter=atom"
         Then we get OK response
         Then we "get" "<title><![CDATA[headline 1]]></title>" in syndicate xml response
         Then we "don't get" "<title><![CDATA[headline 2]]></title>" in syndicate xml response
@@ -64,7 +64,7 @@ Feature: News API Syndicate ATOM Search
         }},
          "firstpublished": "#DATE-1#", "versioncreated": "#DATE#"}]
         """
-        When we get "news/syndicate?formatter=atom&q=monkey"
+        When we get "syndicate?formatter=atom&q=monkey"
         Then we get OK response
         Then we "get" "<title><![CDATA[headline 1]]></title>" in syndicate xml response
         Then we "get" "<media:credit>Mick Tsikas/AAP PHOTOS</media:credit>" in syndicate xml response
@@ -120,7 +120,7 @@ Feature: News API Syndicate ATOM Search
         }},
          "firstpublished": "#DATE-1#", "versioncreated": "#DATE#"}]
         """
-        When we get "news/syndicate?formatter=atom"
+        When we get "syndicate?formatter=atom"
         Then we get OK response
         Then we "get" "<title><![CDATA[headline 1]]></title>" in syndicate xml response
         Then we "get" "5fc5dce16369ab07be3325fa" in atom xml response
@@ -156,7 +156,7 @@ Feature: News API Syndicate ATOM Search
         }
         ]
         """
-        When we get "news/syndicate?formatter=atom"
+        When we get "syndicate?formatter=atom"
         Then we get OK response
         Then we "get" "<title><![CDATA[headline 1]]></title>" in syndicate xml response
         Then we "don't get" "<title><![CDATA[headline 2]]></title>" in syndicate xml response

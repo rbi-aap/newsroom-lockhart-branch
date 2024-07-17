@@ -13,7 +13,6 @@ from email import utils
 
 
 class NewsAPISyndicateService(NewsAPINewsService):
-    # set of parameters that the API will allow.
     allowed_params = {
         'start_date', 'end_date',
         'include_fields', 'exclude_fields',
@@ -92,9 +91,9 @@ class NewsAPISyndicateService(NewsAPINewsService):
         SubElement(feed, 'title').text = etree.CDATA('{} Atom Feed'.format(app.config['SITE_NAME']))
         SubElement(feed, 'updated').text = __class__._format_update_date(utcnow())
         SubElement(SubElement(feed, 'author'), 'name').text = app.config['SITE_NAME']
-        SubElement(feed, 'id').text = url_for('news/syndicate|resource', _external=True, formatter='atom')
+        SubElement(feed, 'id').text = url_for('syndicate.get_syndicate_feed', syndicate_type='syndicate', _external=True, formatter='atom')
         SubElement(feed, 'link',
-                   attrib={'href': url_for('news/syndicate|resource', _external=True, formatter='atom'),
+                   attrib={'href': url_for('syndicate.get_syndicate_feed', syndicate_type='syndicate', _external=True, formatter='atom'),
                            'rel': 'self'})
         item_resource = get_resource_service('items')
         image = None
@@ -207,7 +206,7 @@ class NewsAPISyndicateService(NewsAPINewsService):
         channel = SubElement(feed, 'channel')
         SubElement(channel, 'title').text = '{} RSS Feed'.format(app.config['SITE_NAME'])
         SubElement(channel, 'description').text = '{} RSS Feed'.format(app.config['SITE_NAME'])
-        SubElement(channel, 'link').text = url_for('news/syndicate|resource', _external=True, formatter='rss')
+        SubElement(channel, 'link').text = url_for('syndicate.get_syndicate_feed', syndicate_type='syndicate', _external=True, formatter='rss')
         item_resource = get_resource_service('items')
         image = None
         for item in response['_items']:
@@ -255,7 +254,7 @@ class NewsAPISyndicateService(NewsAPINewsService):
                             'COPYRIGHT_HOLDER']
 
                 SubElement(entry, 'source',
-                           attrib={'url': url_for('news/syndicate|resource', _external=True, formatter='rss')}).text = \
+                           attrib={'url': url_for('syndicate.get_syndicate_feed', syndicate_type='syndicate', _external=True, formatter='rss')}).text = \
                     complete_item.get('source', '')
 
                 if complete_item.get('pubstatus') == 'usable':
