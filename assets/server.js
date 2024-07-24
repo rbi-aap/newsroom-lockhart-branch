@@ -29,6 +29,13 @@ class Server {
      * @param {String} url
      * @return {Promise}
      */
+
+   async getCsrfToken() {
+        const response = await this.get('/companies/get-csrf-token');
+        return response.csrf_token;
+
+    }
+
     get(url) {
         return fetch(url, options({}))
             .then(checkStatus);
@@ -62,6 +69,19 @@ class Server {
             body: JSON.stringify(data),
         })).then(checkStatus);
     }
+
+ postWithCsrfToken(url, data) {
+    return this.getCsrfToken().then(csrfToken => {
+        return fetch(url, options({
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': csrfToken
+            },
+            body: JSON.stringify(data),
+        })).then(checkStatus);
+    });
+}
 
     /**
      * Make POST request to url in keeps the format of the input
