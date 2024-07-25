@@ -38,3 +38,24 @@
         font-size: 24px;
     }
 }
+
+$disabled-dimension: 0;
+$text-color: #333333;
+$font-size: 14px;
+
+@mixin hidden {
+  display: none;
+  visibility: hidden;
+}
+
+.disabled-embed {
+  @include hidden;
+  height: $disabled-dimension;
+  width: $disabled-dimension;
+  overflow: hidden;
+}
+
+.default-setting-text {
+  color: $text-color;
+  font-size: $font-size;
+}

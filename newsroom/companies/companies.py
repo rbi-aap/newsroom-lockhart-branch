@@ -51,9 +51,62 @@ class CompaniesResource(newsroom.Resource):
             'type': 'boolean',
             'default': False,
         },
-        'company_type': {
-            'type': 'string',
-            'nullable': True,
+        'embedded_video': {
+            'type': 'boolean',
+            'default': False,
+        },
+        'embedded': {
+            'type': 'dict',
+            'schema': {
+                'video_display': {
+                    'type': 'boolean',
+                    'default': False,
+                },
+                'audio_display': {
+                    'type': 'boolean',
+                    'default': False,
+                },
+                'social_media_display': {
+                    'type': 'boolean',
+                    'default': False,
+                },
+                'images_display': {
+                    'type': 'boolean',
+                    'default': False,
+                },
+                'sdpermit_display': {
+                    'type': 'boolean',
+                    'default': False,
+                },
+                'all_display': {
+                    'type': 'boolean',
+                    'default': False,
+                },
+                'social_media_download': {
+                    'type': 'boolean',
+                    'default': False,
+                },
+                'video_download': {
+                    'type': 'boolean',
+                    'default': False,
+                },
+                'audio_download': {
+                    'type': 'boolean',
+                    'default': False,
+                },
+                'images_download': {
+                    'type': 'boolean',
+                    'default': False,
+                },
+                'sdpermit_download': {
+                    'type': 'boolean',
+                    'default': False,
+                },
+                'all_download': {
+                    'type': 'boolean',
+                    'default': False,
+                }
+            }
         },
         'account_manager': {
             'type': 'string'
