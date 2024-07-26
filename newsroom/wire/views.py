@@ -25,7 +25,8 @@ from newsroom.topics import get_user_topics
 from newsroom.email import send_email
 from newsroom.companies import get_user_company
 from newsroom.utils import get_entity_or_404, get_json_or_400, parse_dates, get_type, is_json_request, query_resource, \
-    get_agenda_dates, get_location_string, get_public_contacts, get_links, get_items_for_user_action, get_entities_elastic_or_mongo_or_404
+    get_agenda_dates, get_location_string, get_public_contacts, get_links, get_items_for_user_action, \
+    get_entities_elastic_or_mongo_or_404
 from newsroom.notifications import push_user_notification, push_notification
 from newsroom.companies import section
 from newsroom.template_filters import is_admin_or_internal
@@ -204,7 +205,7 @@ def download(_ids):
     user = get_user(required=True)
     _format = flask.request.args.get('format', 'text')
     item_type = get_type()
-    items = get_items_for_user_action_block(_ids.split(','), item_type , filter_func=block_items_by_embedded_data)
+    items = get_items_for_user_action_block(_ids.split(','), item_type, filter_func=block_items_by_embedded_data)
     _file = io.BytesIO()
     formatter = app.download_formatters[_format]['formatter']
     mimetype = None

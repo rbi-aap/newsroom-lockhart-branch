@@ -179,7 +179,7 @@ def save_company_permissions(_id):
     orig = get_entity_or_404(_id, 'companies')
     data = get_json_or_400()
     if not csrf_token or csrf_token != expected_csrf_token:
-        current_app.logger.error(f"Permisson CSRF validation failed: {str(e)}")
+        current_app.logger.error("Permisson CSRF validation failed:")
         return jsonify({"error": "Permisson CSRF token validation failed"}), 403
 
     try:
