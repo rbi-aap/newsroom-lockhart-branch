@@ -66,12 +66,12 @@ def block_items_by_embedded_data(items):
                 if m and m.group(1):
                     figure = comment.getnext()
                     for elem in figure.iterchildren():
-                        if elem.tag in excluded_tags:
-                            if 'data-disable-download' not in elem.attrib or elem.attrib['data-disable-download'] != 'true':
-                                elem.attrib['data-disable-download'] = 'true'
+                        if (elem.tag in excluded_tags
+                            and ('data-disable-download' not in elem.attrib
+                                 or elem.attrib['data-disable-download'] != 'true')):
+                            elem.attrib['data-disable-download'] = 'true'
                             html_updated = True
                             break
-
         if not download_social_tag:
             social_media_embeds = root_elem.xpath('//div[@class="embed-block"]')
             for social_media_embed in social_media_embeds:

@@ -93,7 +93,8 @@ def get_allowed_tags(embedded_data):
 
     allowed_tags = {
         'display_tags': [tag for tag, (display_key, _) in tag_mapping.items() if embedded_data.get(display_key, False)],
-        'download_tags': [tag for tag, (_, download_key) in tag_mapping.items() if embedded_data.get(download_key, False)],
+        'download_tags': [tag for tag, (_, download_key) in tag_mapping.items()
+                          if embedded_data.get(download_key, False)],
     }
 
     return allowed_tags

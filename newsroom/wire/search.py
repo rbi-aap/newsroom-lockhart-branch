@@ -543,18 +543,17 @@ class WireSearchService(BaseSearchService):
     def permission_embeds_in_item(self, item, permitted_products):
         disable_download = []
         for key, embed_item in item.get("associations", {}).items():
-            if key.startswith("editor_") and embed_item and (embed_item.get('type', '')) in ['audio', 'video', 'picture']:
-                # get the list of products that the embedded item matched in Superdesk
+            if (key.startswith("editor_") and embed_item
+                    and embed_item.get('type', '') in ['audio', 'video', 'picture']):
                 embed_products = [p.get('code') for p in
                                   ((item.get('associations') or {}).get(key) or {}).get('products', [])]
 
                 if not len(set(embed_products) & set(permitted_products)):
                     disable_download.append(key)
+
         if len(disable_download) == 0:
             logger.info("No embedded items require download disabling.")
             return
-        # logger.info(
-        #     f"Disable download for the following embedded items:- {disable_download}- {item['body_html']}-{item['associations']}")
 
         root_elem = lxml_html.fromstring(item.get('body_html', ''))
         regex = r" EMBED START (?:Video|Audio|Image) {id: \"editor_([0-9]+)"
@@ -567,8 +566,8 @@ class WireSearchService(BaseSearchService):
                 for elem in figure.iterchildren():
                     if elem.tag in ['video', 'audio', 'img']:
                         if "editor_" + m.group(1) in disable_download:
-                            # elem.attrib['data-disable-download'] = 'true'
-                            if 'data-disable-download' not in elem.attrib or elem.attrib['data-disable-download'] != 'true':
+                            if 'data-disable-download' not in elem.attrib or \
+                                    elem.attrib['data-disable-download'] != 'true':
                                 elem.attrib['data-disable-download'] = 'true'
                                 html_updated = True
                     if elem.text and ' EMBED END ' in elem.text:
