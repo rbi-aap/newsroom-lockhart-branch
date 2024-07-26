@@ -4,6 +4,7 @@ import {get, memoize} from 'lodash';
 import {formatHTML} from 'utils';
 import {connect} from 'react-redux';
 import {selectCopy} from '../../wire/actions';
+import DOMPurify from 'dompurify';
 
 /**
  * using component to fix iframely loading
@@ -12,35 +13,39 @@ import {selectCopy} from '../../wire/actions';
 class ArticleBodyHtml extends React.PureComponent {
     constructor(props) {
         super(props);
+        this.state = {
+            sanitizedHtml: ''
+        };
         this.copyClicked = this.copyClicked.bind(this);
         this.clickClicked = this.clickClicked.bind(this);
+        this.preventContextMenu = this.preventContextMenu.bind(this);
 
         // use memoize so this function is only called when `body_html` changes
         this.getBodyHTML = memoize(this._getBodyHTML.bind(this));
-
         this.bodyRef = React.createRef();
     }
 
     componentDidMount() {
+        this.updateSanitizedHtml();
         this.loadIframely();
         this.executeScripts();
         document.addEventListener('copy', this.copyClicked);
         document.addEventListener('click', this.clickClicked);
+        this.addContextMenuEventListeners();
     }
 
     clickClicked(event) {
         if (event != null) {
             const target = event.target;
-
             if (target && target.tagName === 'A' && this.isLinkExternal(target.href)) {
                 event.preventDefault();
                 event.stopPropagation();
 
-                // security https://mathiasbynens.github.io/rel-noopener/
-                var nextWindow = window.open();
+                const nextWindow = window.open(target.href, '_blank', 'noopener');
 
-                nextWindow.opener = null;
-                nextWindow.location.href = target.href;
+                if (nextWindow) {
+                    nextWindow.opener = null;
+                }
             }
         }
     }
@@ -57,9 +62,36 @@ class ArticleBodyHtml extends React.PureComponent {
         }
     }
 
-    componentDidUpdate() {
+    componentDidUpdate(prevProps) {
+        if (prevProps.item !== this.props.item) {
+            this.updateSanitizedHtml();
+        }
         this.loadIframely();
         this.executeScripts();
+        this.addContextMenuEventListeners();
+    }
+
+    updateSanitizedHtml() {
+        const item = this.props.item;
+        const html = this.getBodyHTML(
+            get(item, 'es_highlight.body_html.length', 0) > 0 ?
+                item.es_highlight.body_html[0] :
+                item.body_html
+        );
+        this.sanitizeHtml(html);
+    }
+
+    sanitizeHtml(html) {
+        if (!html) {
+            this.setState({ sanitizedHtml: '' });
+            return;
+        }
+        const sanitizedHtml = DOMPurify.sanitize(html, {
+            ADD_TAGS: ['iframe'],
+            ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src', 'width', 'height'],
+            ALLOW_DATA_ATTR: true
+        });
+        this.setState({ sanitizedHtml });
     }
 
     loadIframely() {
@@ -78,50 +110,51 @@ class ArticleBodyHtml extends React.PureComponent {
             return;
         }
 
-        if (window.Plyr != null) {
-            window.Plyr.setup('.js-player');
-        }
-
         tree.querySelectorAll('script').forEach((s) => {
             if (s.hasAttribute('src') && !loaded.includes(s.getAttribute('src'))) {
                 let url = s.getAttribute('src');
 
-                loaded.push(url);
+                // Check if the URL starts with 'https://' or 'http://'
+                if (url.startsWith('https://') || url.startsWith('http://')) {
+                    loaded.push(url);
 
-                if (url.includes('twitter.com/') && window.twttr != null) {
-                    window.twttr.widgets.load();
-                    return;
+                    // Check for specific platform URLs and corresponding global objects
+                    if (url.includes('twitter.com/') && window.twttr != null) {
+                        window.twttr.widgets.load();
+                        return;
+                    }
+
+                    if (url.includes('instagram.com/') && window.instgrm != null) {
+                        window.instgrm.Embeds.process();
+                        return;
+                    }
+
+                    // Force Flourish to always load
+                    if (url.includes('flourish.studio/')) {
+                        delete window.FlourishLoaded;
+                    }
+
+                    if (url.startsWith('http')) {
+                        // Change https?:// to // so it uses the schema of the client
+                        url = url.substring(url.indexOf(':') + 1);
+                    }
+
+                    const script = document.createElement('script');
+                    script.src = url;
+                    script.async = true;
+
+                    script.onload = () => {
+                        document.body.removeChild(script);
+                    };
+
+                    script.onerror = (error) => {
+                        throw new URIError('The script ' + error.target.src + ' didn\'t load.');
+                    };
+
+                    document.body.appendChild(script);
+                } else {
+                    console.warn('stop loading insecure script:', url);
                 }
-
-                if (url.includes('instagram.com/') && window.instgrm != null) {
-                    window.instgrm.Embeds.process();
-                    return;
-                }
-
-                // Force Flourish to always load
-                if (url.includes('flourish.studio/')) {
-                    delete window.FlourishLoaded;
-                }
-
-                if (url.startsWith('http')) {
-                    // change https?:// to // so it uses schema of the client
-                    url = url.substring(url.indexOf(':') + 1);
-                }
-
-                const script = document.createElement('script');
-
-                script.src = url;
-                script.async = true;
-
-                script.onload = () => {
-                    document.body.removeChild(script);
-                };
-
-                script.onerrror = (error) => {
-                    throw new URIError('The script ' + error.target.src + 'didn\'t load.');
-                };
-
-                document.body.appendChild(script);
             }
         });
     }
@@ -133,6 +166,29 @@ class ArticleBodyHtml extends React.PureComponent {
     componentWillUnmount() {
         document.removeEventListener('copy', this.copyClicked);
         document.removeEventListener('click', this.clickClicked);
+        this.removeContextMenuEventListeners();
+    }
+
+    addContextMenuEventListeners() {
+        const tree = this.bodyRef.current;
+        if (tree) {
+            tree.querySelectorAll('[data-disable-download="true"]').forEach((element) => {
+                element.addEventListener('contextmenu', this.preventContextMenu);
+            });
+        }
+    }
+
+    removeContextMenuEventListeners() {
+        const tree = this.bodyRef.current;
+        if (tree) {
+            tree.querySelectorAll('[data-disable-download="true"]').forEach((element) => {
+                element.removeEventListener('contextmenu', this.preventContextMenu);
+            });
+        }
+    }
+
+    preventContextMenu(event) {
+        event.preventDefault();
     }
 
     _getBodyHTML(bodyHtml) {
@@ -171,7 +227,7 @@ class ArticleBodyHtml extends React.PureComponent {
 
         container.innerHTML = html;
         container
-            .querySelectorAll('img')
+            .querySelectorAll('img,video,audio')
             .forEach((imageTag) => {
                 // Using the tag's `src` attribute, find the Original Rendition's ID
                 const originalMediaId = imageEmbedOriginalIds.find((mediaId) => (
@@ -207,21 +263,13 @@ class ArticleBodyHtml extends React.PureComponent {
                 imageSourcesUpdated = true;
             });
 
-        // If Image tags were not updated, then return the supplied html as-is
         return imageSourcesUpdated ?
             container.innerHTML :
             html;
     }
 
     render() {
-        const item = this.props.item;
-        const html = this.getBodyHTML(
-            get(item, 'es_highlight.body_html.length', 0) > 0 ?
-                item.es_highlight.body_html[0] :
-                item.body_html
-        );
-
-        if (!html) {
+        if (!this.state.sanitizedHtml) {
             return null;
         }
 
@@ -230,7 +278,7 @@ class ArticleBodyHtml extends React.PureComponent {
                 ref={this.bodyRef}
                 className='wire-column__preview__text'
                 id='preview-body'
-                dangerouslySetInnerHTML={({__html: html})}
+                dangerouslySetInnerHTML={{__html: this.state.sanitizedHtml}}
             />
         );
     }

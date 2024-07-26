@@ -3,6 +3,8 @@ from .base import BaseFormatter
 from .utils import remove_internal_renditions, log_media_downloads, remove_unpermissioned_embeds
 from newsroom.utils import update_embeds_in_body
 from ...upload import ASSETS_RESOURCE
+from newsroom.wire.block_media.filter_htmlpackage import filter_embedded_data
+
 import base64
 
 
@@ -71,6 +73,7 @@ class HTMLMediaFormatter(BaseFormatter):
             item['associations']['featuremedia']['renditions'][rendition]['href'] = "data:{};base64,".format(
                 mimetype) + base64.b64encode(file.read()).decode()
 
+    @filter_embedded_data
     def format_item(self, item, item_type='items'):
         remove_unpermissioned_embeds(item)
         remove_internal_renditions(item)

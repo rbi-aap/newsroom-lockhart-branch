@@ -3,6 +3,7 @@ from .base import BaseFormatter
 from .utils import remove_internal_renditions, rewire_featuremedia, log_media_downloads, remove_unpermissioned_embeds
 from newsroom.utils import update_embeds_in_body
 from superdesk.logging import logger
+from newsroom.wire.block_media.filter_htmlpackage import filter_embedded_data
 
 
 class HTMLPackageFormatter(BaseFormatter):
@@ -66,6 +67,7 @@ class HTMLPackageFormatter(BaseFormatter):
 
         update_embeds_in_body(item, update_image, update_video_or_audio, update_video_or_audio)
 
+    @filter_embedded_data
     def format_item(self, item, item_type='items'):
         remove_unpermissioned_embeds(item)
         remove_internal_renditions(item, remove_media=False)
