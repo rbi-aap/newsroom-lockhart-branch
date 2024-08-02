@@ -37,6 +37,8 @@ def remove_internal_renditions(item, remove_media=False):
             association_item.pop('subscribers', None)
 
     return item
+
+
 def add_media(zf, item):
     added_files = []
     associations = item.get('associations', {})
