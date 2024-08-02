@@ -2,7 +2,7 @@ from superdesk.logging import logger
 from .ninjs import NINJSFormatter
 from .utils import remove_internal_renditions, rewire_featuremedia, log_media_downloads, remove_unpermissioned_embeds
 from newsroom.utils import update_embeds_in_body
-from newsroom.wire.block_media.filter_htmlpackage import filter_embedded_data
+
 
 class NINJSDownloadFormatter(NINJSFormatter):
     """
@@ -35,6 +35,7 @@ class NINJSDownloadFormatter(NINJSFormatter):
 
             logger.warning("href not found for the original in NINJSDownload formatter")
             return None
+
         def _get_source_set_refs(marker, item):
             """
             For the given marker (association) return the set of available hrefs and the widths
@@ -78,7 +79,6 @@ class NINJSDownloadFormatter(NINJSFormatter):
             return True
 
         update_embeds_in_body(item, update_image, update_video_or_audio, update_video_or_audio)
-
 
     def _transform_to_ninjs(self, item):
         remove_unpermissioned_embeds(item)

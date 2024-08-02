@@ -3,7 +3,6 @@ from .base import BaseFormatter
 from .utils import remove_internal_renditions, log_media_downloads, remove_unpermissioned_embeds
 from newsroom.utils import update_embeds_in_body
 from ...upload import ASSETS_RESOURCE
-from newsroom.wire.block_media.filter_htmlpackage import filter_embedded_data
 
 import base64
 

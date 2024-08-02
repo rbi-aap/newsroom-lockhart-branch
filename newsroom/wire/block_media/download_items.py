@@ -1,7 +1,6 @@
 from newsroom.auth import get_user
 from newsroom.wire.block_media.company_factory import CompanyFactory
 from newsroom.wire.block_media.filter_media import get_allowed_tags
-from newsroom.wire.block_media.permission_media import PermissionMedia
 
 from lxml import html as lxml_html
 import re
@@ -12,7 +11,7 @@ logger = logging.getLogger(__name__)
 def filter_items_download(func):
     def wrapper(_ids, item_type, filter_func=None):
         items = func(_ids, item_type)
-        if filter_func and items and ( item_type != 'agenda'):
+        if filter_func and items and (item_type != 'agenda'):
             items = filter_func(items)
         return items
     return wrapper
@@ -31,12 +30,6 @@ def block_items_by_embedded_data(items):
             for editor in editors_to_remove:
                 associations.pop(editor, None)
 
-            # disable_downloads = PermissionMedia.permission_editor_in_item(item)
-
-            # if disable_downloads:
-            #     for disable_download in disable_downloads:
-            #         if disable_download in associations:
-            #             associations.pop(disable_download)
             item["associations"] = associations
         return item
 

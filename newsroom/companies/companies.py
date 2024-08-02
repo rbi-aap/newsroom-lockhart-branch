@@ -47,8 +47,8 @@ class CompaniesResource(newsroom.Resource):
         'archive_access': {
             'type': 'boolean',
         },
-        'company_type':{
-            'type':'string',
+        'company_type': {
+            'type': 'string',
             'nullable': True,
         },
         'events_only': {
