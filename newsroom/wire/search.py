@@ -580,4 +580,5 @@ class WireSearchService(BaseSearchService):
     def on_fetched(self, doc):
         if app.config.get("EMBED_PRODUCT_FILTERING"):
             for item in doc[config.ITEMS]:
-                self.permission_embeds_in_item(item, self.get_permitted_products())
+                pass
+                # self.permission_embeds_in_item(item, self.get_permitted_products())
