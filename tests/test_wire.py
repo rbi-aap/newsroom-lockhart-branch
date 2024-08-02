@@ -666,4 +666,4 @@ def test_embed_mark_disable_download(client, app):
     resp = client.get('/wire/search?type=wire')
     data = json.loads(resp.get_data())
     assert "data-disable-download" in data['_items'][0]['body_html']
-    assert data['_items'][0]['body_html'].count("data-disable-download") == 1
+    assert data['_items'][0]['body_html'].count("data-disable-download") == 2
