@@ -2,7 +2,7 @@ from superdesk.logging import logger
 from .ninjs import NINJSFormatter
 from .utils import remove_internal_renditions, rewire_featuremedia, log_media_downloads, remove_unpermissioned_embeds
 from newsroom.utils import update_embeds_in_body
-
+from newsroom.wire.block_media.filter_htmlpackage import filter_embedded_data
 
 class NINJSDownloadFormatter(NINJSFormatter):
     """
@@ -13,23 +13,28 @@ class NINJSDownloadFormatter(NINJSFormatter):
         self.direct_copy_properties += ('associations',)
 
     def rewire_embeded_images(self, item):
-
         def _get_source_ref(marker, item):
             widest = -1
             src_rendition = ""
-            for rendition in item.get("associations").get(marker).get("renditions"):
-                width = item.get("associations").get(marker).get("renditions").get(rendition).get("width")
-                if width > widest:
-                    widest = width
-                    src_rendition = rendition
+            associations = item.get("associations")
+            if associations:
+                marker_association = associations.get(marker)
+                if marker_association:
+                    renditions = marker_association.get("renditions")
+                    if renditions:
+                        for rendition in renditions:
+                            width = renditions.get(rendition, {}).get("width")
+                            if width and width > widest:
+                                widest = width
+                                src_rendition = rendition
 
-            if widest > 0:
-                return item.get("associations").get(marker).get("renditions").get(src_rendition).get("href").lstrip('/')
+            if widest > 0 and src_rendition:
+                href = associations.get(marker, {}).get("renditions", {}).get(src_rendition, {}).get("href")
+                if href:
+                    return href.lstrip('/')
 
-            logger.warning(
-                "href not found for the original in NINJSDownload formatter")
+            logger.warning("href not found for the original in NINJSDownload formatter")
             return None
-
         def _get_source_set_refs(marker, item):
             """
             For the given marker (association) return the set of available hrefs and the widths
@@ -38,13 +43,17 @@ class NINJSDownloadFormatter(NINJSFormatter):
             :return:
             """
             srcset = []
-            for rendition in item.get("associations").get(marker).get("renditions"):
-                srcset.append(
-                    item.get("associations").get(marker).get("renditions").get(rendition).get("href").lstrip('/')
-                    + " "
-                    + str(item.get("associations").get(marker).get("renditions").get(rendition).get("width"))
-                    + "w"
-                )
+            associations = item.get("associations")
+            if associations:
+                marker_association = associations.get(marker)
+                if marker_association:
+                    renditions = marker_association.get("renditions")
+                    if renditions:
+                        for rendition in renditions:
+                            href = renditions.get(rendition, {}).get("href")
+                            width = renditions.get(rendition, {}).get("width")
+                            if href and width:
+                                srcset.append(href.lstrip('/') + " " + str(width) + "w")
             return ",".join(srcset)
 
         def update_image(item, elem, group):
@@ -69,6 +78,7 @@ class NINJSDownloadFormatter(NINJSFormatter):
             return True
 
         update_embeds_in_body(item, update_image, update_video_or_audio, update_video_or_audio)
+
 
     def _transform_to_ninjs(self, item):
         remove_unpermissioned_embeds(item)

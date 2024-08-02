@@ -47,11 +47,11 @@ class CompaniesResource(newsroom.Resource):
         'archive_access': {
             'type': 'boolean',
         },
-        'events_only': {
-            'type': 'boolean',
-            'default': False,
+        'company_type':{
+            'type':'string',
+            'nullable': True,
         },
-        'embedded_video': {
+        'events_only': {
             'type': 'boolean',
             'default': False,
         },

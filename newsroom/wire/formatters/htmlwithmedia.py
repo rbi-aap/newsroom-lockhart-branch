@@ -73,7 +73,6 @@ class HTMLMediaFormatter(BaseFormatter):
             item['associations']['featuremedia']['renditions'][rendition]['href'] = "data:{};base64,".format(
                 mimetype) + base64.b64encode(file.read()).decode()
 
-    @filter_embedded_data
     def format_item(self, item, item_type='items'):
         remove_unpermissioned_embeds(item)
         remove_internal_renditions(item)

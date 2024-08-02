@@ -37,30 +37,6 @@ def remove_internal_renditions(item, remove_media=False):
             association_item.pop('subscribers', None)
 
     return item
-
-
-# def add_media(zf, item):
-#     """
-#     Add the media files associated with the item
-#     :param zf: Zipfile
-#     :param item:
-#     :return:
-#     """
-#     added_files = []
-#     for _key, associated_item in item.get('associations', {}).items():
-#         if associated_item is None:
-#             continue
-#         renditions = associated_item.get('renditions')
-#         if renditions and isinstance(renditions, dict):
-#             for rendition in associated_item.get('renditions'):
-#                 name = associated_item.get('renditions').get(rendition).get('href').lstrip('/')
-#                 if name in added_files:
-#                     continue
-#                 file = flask.current_app.media.get(associated_item.get('renditions').get(rendition).get('media'),
-#                                                    ASSETS_RESOURCE)
-#                 zf.writestr(name, file.read())
-#                 added_files.append(name)
-
 def add_media(zf, item):
     added_files = []
     associations = item.get('associations', {})

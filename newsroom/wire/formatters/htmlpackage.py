@@ -67,7 +67,6 @@ class HTMLPackageFormatter(BaseFormatter):
 
         update_embeds_in_body(item, update_image, update_video_or_audio, update_video_or_audio)
 
-    @filter_embedded_data
     def format_item(self, item, item_type='items'):
         remove_unpermissioned_embeds(item)
         remove_internal_renditions(item, remove_media=False)
