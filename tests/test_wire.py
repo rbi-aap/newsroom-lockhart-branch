@@ -70,6 +70,7 @@ def get_bookmarks_count(client, user):
 
 
 def test_bookmarks(client, app):
+    pass;
     user_id = get_admin_user_id(app)
     assert user_id
 
