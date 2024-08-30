@@ -7,6 +7,7 @@ import {selectCopy} from '../../wire/actions';
 import DOMPurify from 'dompurify';
 
 const fallbackDefault = 'https://scontent.fsyd3-1.fna.fbcdn.net/v/t39.30808-6/409650761_846997544097330_4773850429743120820_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=127cfc&_nc_ohc=j6x9FL3TtcoQ7kNvgF9emTy&_nc_ht=scontent.fsyd3-1.fna&_nc_gid=ALgZM2NojeFY-L80j-LAA9M&oh=00_AYC6Y4pRTB22E1bRF1fqHDMfDpkcfNmBtIrAkRxTX08xEA&oe=66D338BF';
+
 class ArticleBodyHtml extends React.PureComponent {
     constructor(props) {
         super(props);
@@ -30,7 +31,7 @@ class ArticleBodyHtml extends React.PureComponent {
         document.addEventListener('copy', this.copyClicked);
         document.addEventListener('click', this.clickClicked);
         this.addContextMenuEventListeners();
-        this.startMemoryUsageTracking();
+        // this.startMemoryUsageTracking();
     }
 
     componentDidUpdate(prevProps) {
@@ -110,6 +111,7 @@ class ArticleBodyHtml extends React.PureComponent {
             window.iframely.load();
         }
     }
+
     setupPlyrPlayers() {
         const tree = this.bodyRef.current;
         if (tree == null || window.Plyr == null) {
@@ -160,7 +162,6 @@ class ArticleBodyHtml extends React.PureComponent {
 
         function stopScrubbing() {
             if (isScrubbing) {
-                 console.log(`Playback - Current Time: ${player.currentTime.toFixed(2)}s, Duration: ${player.duration.toFixed(2)}s, Percentage: ${((player.currentTime / player.duration) * 100).toFixed(2)}%`);
                 isScrubbing = false;
                 if (!wasPaused) {
                     player.play();
@@ -169,53 +170,33 @@ class ArticleBodyHtml extends React.PureComponent {
         }
 
     }
+
     checkVideoLoading(player, videoSrc) {
         if (!videoSrc || !videoSrc.startsWith('/assets/')) {
             return;
         }
 
-        const startTime = Date.now();
+        // const startTime = Date.now();
 
         const loadHandler = () => {
-            const loadTime = Date.now() - startTime;
-
-            if (loadTime < 100) {
-                console.log(`Media ${videoSrc} from cache. Load time: ${loadTime}ms`);
-            } else {
-                console.log(`Media ${videoSrc} from network server. Load time: ${loadTime}ms`);
-            }
-
-            if (player.duration > 0) {
-                console.log(`Media ${videoSrc} is fully loaded. Duration: ${player.duration}s`);
-            }
-
+            // const loadTime = Date.now() - startTime;
             if (player.media.videoWidth === 0 && player.media.videoHeight === 0) {
-                console.log("Video dimensions are not available");
-                if (player.poster) {
-                    console.log("Poster image is already set:", player.poster);
-                } else {
+                if (!player.poster) {
+                    // } else {
                     player.poster = fallbackDefault;
-                    console.log("Poster image set to:", player.poster);
                 }
             } else {
-                console.log("Video dimensions are available");
                 const isFirstFrameBlack = player.media.videoWidth === 1920 && player.media.videoHeight === 1080;
-                if (isFirstFrameBlack) {
-                    console.log("First frame is meaningful, Setting no fallback poster image.");
-                } else if (player.poster) {
-                    console.log("Poster image is set:", player.poster);
-                } else {
-                    console.log("No poster image is set. Setting fallback poster image.");
-                    player.poster = fallbackDefault;
-                }
+                if (!isFirstFrameBlack)
+                    if (!player.poster) {
+                        player.poster = fallbackDefault;
+                    }
             }
             player.off('loadeddata', loadHandler);
         };
 
         player.on('loadeddata', loadHandler);
-        player.on('error', (error) => {
-            console.error(`Error loading media ${videoSrc}:`, error);
-        });
+
     }
 
 
@@ -341,14 +322,6 @@ class ArticleBodyHtml extends React.PureComponent {
                     id='preview-body'
                     dangerouslySetInnerHTML={{__html: this.state.sanitizedHtml}}
                 />
-                {this.state.memoryUsage && (
-                    <div className="memory-usage">
-                        <h4>Memory Usage</h4>
-                        <p>Used JS Heap: {this.state.memoryUsage.usedJSHeapSize.toFixed(2)} MB</p>
-                        <p>Total JS Heap: {this.state.memoryUsage.totalJSHeapSize.toFixed(2)} MB</p>
-                        <p>JS Heap Limit: {this.state.memoryUsage.jsHeapSizeLimit.toFixed(2)} MB</p>
-                    </div>
-                )}
             </div>
         );
     }
