@@ -54,7 +54,6 @@ def set_products(app):
     }])
 
 
-@fixture
 def test_item_json(client):
     # public user
     with client.session_transaction() as session:
@@ -68,7 +67,6 @@ def test_item_json(client):
     assert 'coverages' not in data
 
 
-@fixture
 def test_search(client, app):
     # public user
     set_products(app)
@@ -116,7 +114,6 @@ def set_watch_products(app):
     }])
 
 
-@fixture
 @mock.patch('newsroom.agenda.email.send_email', mock_send_email)
 def test_watched_event_sends_notification_for_event_update(client, app, mocker):
     event = deepcopy(test_event)
@@ -151,7 +148,6 @@ def test_watched_event_sends_notification_for_event_update(client, app, mocker):
     assert notifications[0]['_id'] == '{}_foo'.format(PUBLIC_USER_ID)
 
 
-@fixture
 @mock.patch('newsroom.agenda.email.send_email', mock_send_email)
 def test_watched_event_sends_notification_for_unpost_event(client, app, mocker):
     event = deepcopy(test_event)
@@ -182,7 +178,6 @@ def test_watched_event_sends_notification_for_unpost_event(client, app, mocker):
     assert notifications[0]['_id'] == '{}_foo'.format(PUBLIC_USER_ID)
 
 
-@fixture
 @mock.patch('newsroom.email.send_email', mock_send_email)
 def test_watched_event_sends_notification_for_added_planning(client, app, mocker):
     event = deepcopy(test_event)
@@ -210,7 +205,6 @@ def test_watched_event_sends_notification_for_added_planning(client, app, mocker
     assert len(push_mock.call_args[1]['users']) == 0
 
 
-@fixture
 @mock.patch('newsroom.email.send_email', mock_send_email)
 def test_watched_event_sends_notification_for_cancelled_planning(client, app, mocker):
     event = deepcopy(test_event)
@@ -241,7 +235,6 @@ def test_watched_event_sends_notification_for_cancelled_planning(client, app, mo
     assert len(push_mock.call_args[1]['users']) == 0
 
 
-@fixture
 @mock.patch('newsroom.email.send_email', mock_send_email)
 def test_watched_event_sends_notification_for_added_coverage(client, app, mocker):
     event = deepcopy(test_event)

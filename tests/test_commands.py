@@ -2,7 +2,6 @@ from flask import json
 from time import sleep
 from datetime import datetime, timedelta
 from eve.utils import ParsedRequest
-from pytest import fixture
 
 from newsroom.mongo_utils import index_elastic_from_mongo, index_elastic_from_mongo_from_timestamp
 
@@ -16,7 +15,6 @@ def remove_elastic_index(app):
     es.indices.delete(indices, ignore=[404])
 
 
-@fixture
 def test_item_detail(app, client):
     remove_elastic_index(app)
     app.data.init_elastic(app)
@@ -40,7 +38,6 @@ def test_item_detail(app, client):
     assert 3 == len(data['_items'])
 
 
-@fixture
 def test_index_from_mongo_hours_from(app, client):
     remove_elastic_index(app)
     app.data.init_elastic(app)
@@ -59,7 +56,6 @@ def test_index_from_mongo_hours_from(app, client):
     assert 1 == len(data['_items'])
 
 
-@fixture
 def test_index_from_mongo_collection(app, client):
     remove_elastic_index(app)
     app.data.init_elastic(app)
@@ -78,7 +74,6 @@ def test_index_from_mongo_collection(app, client):
     assert 3 == len(data['_items'])
 
 
-@fixture
 def test_index_from_mongo_from_timestamp(app, client):
     app.data.remove('items')
     sorted_items = [{

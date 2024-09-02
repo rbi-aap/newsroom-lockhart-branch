@@ -12,7 +12,7 @@ from newsroom.utils import get_entity_or_404
 from newsroom.notifications import get_user_notifications
 from .fixtures import init_auth  # noqa
 from unittest import mock
-from pytest import fixture
+
 
 test_event = {
     'state': 'scheduled',
@@ -190,7 +190,6 @@ text_item = {'byline': 'A Smith', 'copyrightholder': 'Australian Associated Pres
              'urgency': 3}
 
 
-@fixture
 def test_push_parsed_event(client, app):
     event = deepcopy(test_event)
     client.post('/push', data=json.dumps(event), content_type='application/json')
@@ -210,7 +209,6 @@ def test_push_parsed_event(client, app):
     assert 1 == len(data['_items'])
 
 
-@fixture
 def test_push_cancelled_event(client, app):
     event = deepcopy(test_event)
     event['guid'] = 'foo2'
@@ -233,7 +231,6 @@ def test_push_cancelled_event(client, app):
     assert parsed['event']['pubstatus'] == 'cancelled'
 
 
-@fixture
 def test_push_updated_event(client, app):
     event = deepcopy(test_event)
     event['guid'] = 'foo3'
@@ -255,7 +252,6 @@ def test_push_updated_event(client, app):
     assert parsed['dates']['end'].day == 30
 
 
-@fixture
 def test_push_parsed_planning_for_an_existing_event(client, app):
     event = deepcopy(test_event)
     event['guid'] = 'foo4'
@@ -298,7 +294,6 @@ def test_push_parsed_planning_for_an_existing_event(client, app):
     assert 2 == len(parsed_planning['coverages'])
 
 
-@fixture
 def test_push_coverages_with_different_dates_for_an_existing_event(client, app):
     event = deepcopy(test_event)
     event['guid'] = 'foo4'
@@ -334,7 +329,6 @@ def test_push_coverages_with_different_dates_for_an_existing_event(client, app):
         planning['coverages'][1]['planning']['scheduled'].replace('0000', '00:00')
 
 
-@fixture
 def test_push_planning_with_different_dates_for_an_existing_event(client, app):
     event = deepcopy(test_event)
     event['guid'] = 'foo4'
@@ -366,7 +360,6 @@ def test_push_planning_with_different_dates_for_an_existing_event(client, app):
     assert parsed_planning['slugline'] == planning['slugline']
 
 
-@fixture
 def test_push_cancelled_planning_for_an_existing_event(client, app):
     event = deepcopy(test_event)
     event['guid'] = 'foo5'
@@ -396,7 +389,6 @@ def test_push_cancelled_planning_for_an_existing_event(client, app):
     assert len(parsed['planning_items']) == 0
 
 
-@fixture
 def test_push_parsed_adhoc_planning_for_an_non_existing_event(client, app):
     # pushing an event to create the index
     event = deepcopy(test_event)
@@ -418,7 +410,6 @@ def test_push_parsed_adhoc_planning_for_an_non_existing_event(client, app):
     assert parsed['definition_long'] == test_planning['abstract']
 
 
-@fixture
 @mock.patch('newsroom.email.send_email', mock_send_email)
 def test_notify_topic_matches_for_new_event_item(client, app, mocker):
     event = deepcopy(test_event)
@@ -453,7 +444,6 @@ def test_notify_topic_matches_for_new_event_item(client, app, mocker):
     assert len(push_mock.call_args[1]['topics']) == 1
 
 
-@fixture
 @mock.patch('newsroom.email.send_email', mock_send_email)
 def test_notify_topic_matches_for_new_planning_item(client, app, mocker):
     event = deepcopy(test_event)
@@ -491,7 +481,6 @@ def test_notify_topic_matches_for_new_planning_item(client, app, mocker):
     assert len(push_mock.call_args[1]['topics']) == 1
 
 
-@fixture
 @mock.patch('newsroom.email.send_email', mock_send_email)
 def test_notify_topic_matches_for_ad_hoc_planning_item(client, app, mocker):
     # remove event link from planning item
@@ -530,7 +519,6 @@ def test_notify_topic_matches_for_ad_hoc_planning_item(client, app, mocker):
     assert len(push_mock.call_args[1]['topics']) == 1
 
 
-@fixture
 @mock.patch('newsroom.email.send_email', mock_send_email)
 def test_notify_user_matches_for_ad_hoc_agenda_in_history(client, app, mocker):
     company_ids = app.data.insert('companies', [{
@@ -574,7 +562,6 @@ def test_notify_user_matches_for_ad_hoc_agenda_in_history(client, app, mocker):
     assert notification['item'] == 'bar3'
 
 
-@fixture
 @mock.patch('newsroom.email.send_email', mock_send_email)
 def test_notify_user_matches_for_new_agenda_in_history(client, app, mocker):
     company_ids = app.data.insert('companies', [{
@@ -613,7 +600,6 @@ def test_notify_user_matches_for_new_agenda_in_history(client, app, mocker):
     assert notification['item'] == 'foo'
 
 
-@fixture
 @mock.patch('newsroom.email.send_email', mock_send_email)
 def test_notify_user_matches_for_new_planning_in_history(client, app, mocker):
     event = deepcopy(test_event)
@@ -659,7 +645,6 @@ def test_notify_user_matches_for_new_planning_in_history(client, app, mocker):
     assert notification['item'] == 'foo'
 
 
-@fixture
 @mock.patch('newsroom.email.send_email', mock_send_email)
 def test_notify_user_matches_for_killed_item_in_history(client, app, mocker):
     event = deepcopy(test_event)
@@ -704,7 +689,6 @@ def test_notify_user_matches_for_killed_item_in_history(client, app, mocker):
     assert notification['item'] == 'foo'
 
 
-@fixture
 def test_push_event_with_files(client, app):
     event = deepcopy(test_event)
     media_id = 'media-id'
@@ -732,7 +716,6 @@ def test_push_event_with_files(client, app):
     assert 'foo' == resp.get_data().decode('utf-8')
 
 
-@fixture
 @mock.patch('newsroom.agenda.email.send_email', mock_send_email)
 def test_push_story_wont_notify_for_first_publish(client, app, mocker):
     test_item = {
@@ -762,7 +745,6 @@ def test_push_story_wont_notify_for_first_publish(client, app, mocker):
     assert len(outbox) == 0
 
 
-@fixture
 def assign_active_company(app):
     company_ids = app.data.insert('companies', [{
         'name': 'Press co.',
@@ -774,7 +756,6 @@ def assign_active_company(app):
     return current_user['_id']
 
 
-@fixture
 @mock.patch('newsroom.agenda.email.send_email', mock_send_email)
 def test_watched_event_sends_notification_for_event_update(client, app, mocker):
     event = deepcopy(test_event)
@@ -805,7 +786,6 @@ def test_watched_event_sends_notification_for_event_update(client, app, mocker):
     assert notifications[0]['_id'] == '{}_foo'.format(user_id)
 
 
-@fixture
 @mock.patch('newsroom.agenda.email.send_email', mock_send_email)
 def test_watched_event_sends_notification_for_unpost_event(client, app, mocker):
     event = deepcopy(test_event)
@@ -834,7 +814,6 @@ def test_watched_event_sends_notification_for_unpost_event(client, app, mocker):
     assert notifications[0]['_id'] == '{}_foo'.format(user_id)
 
 
-@fixture
 @mock.patch('newsroom.agenda.email.send_email', mock_send_email)
 def test_watched_event_sends_notification_for_added_planning(client, app, mocker):
     event = deepcopy(test_event)
@@ -863,7 +842,6 @@ def test_watched_event_sends_notification_for_added_planning(client, app, mocker
     assert notifications[0]['_id'] == '{}_foo'.format(user_id)
 
 
-@fixture
 @mock.patch('newsroom.agenda.email.send_email', mock_send_email)
 def test_watched_event_sends_notification_for_cancelled_planning(client, app, mocker):
     event = deepcopy(test_event)
@@ -893,7 +871,6 @@ def test_watched_event_sends_notification_for_cancelled_planning(client, app, mo
     assert notifications[0]['_id'] == '{}_foo'.format(user_id)
 
 
-@fixture
 @mock.patch('newsroom.agenda.email.send_email', mock_send_email)
 def test_watched_event_sends_notification_for_added_coverage(client, app, mocker):
     event = deepcopy(test_event)
@@ -943,7 +920,6 @@ def test_watched_event_sends_notification_for_added_coverage(client, app, mocker
     assert notifications[0]['_id'] == '{}_foo'.format(user_id)
 
 
-@fixture
 def test_filter_killed_events(client, app):
     event = deepcopy(test_event)
     post_json(client, '/push', event)
@@ -965,7 +941,6 @@ def test_filter_killed_events(client, app):
     assert 'killed' == parsed['state']
 
 
-@fixture
 def test_push_cancelled_planning_cancels_adhoc_planning(client, app):
     # pushing an event to create the index
     event = deepcopy(test_event)
@@ -991,7 +966,6 @@ def test_push_cancelled_planning_cancels_adhoc_planning(client, app):
     assert 'Reason' in parsed['ednote'][0]
 
 
-@fixture
 def test_push_update_for_an_item_with_coverage(client, app, mocker):
     test_item = {
         'type': 'text',
@@ -1032,7 +1006,6 @@ def test_push_update_for_an_item_with_coverage(client, app, mocker):
     assert wire_item['_id'] == 'update'
 
 
-@fixture
 def test_push_coverages_with_linked_stories(client, app):
     event = deepcopy(test_event)
     event['guid'] = 'foo7'
@@ -1062,7 +1035,6 @@ def test_push_coverages_with_linked_stories(client, app):
     assert parsed['coverages'][0]['delivery_href'] is None
 
 
-@fixture
 def test_push_coverages_with_updates_to_linked_stories(client, app):
     event = deepcopy(test_event)
     event['guid'] = 'foo7'
@@ -1108,7 +1080,6 @@ def test_push_coverages_with_updates_to_linked_stories(client, app):
     assert parsed['coverages'][0]['delivery_href'] == '/wire/item8'
 
 
-@fixture
 def test_push_coverages_with_correction_to_linked_stories(client, app):
     event = deepcopy(test_event)
     event['guid'] = 'foo7'
@@ -1158,7 +1129,6 @@ def test_push_coverages_with_correction_to_linked_stories(client, app):
     assert parsed['coverages'][0]['delivery_href'] == '/wire/item8'
 
 
-@fixture
 def test_push_event_from_planning(client, app):
     plan = deepcopy(test_planning)
     plan['guid'] = 'adhoc_plan'
@@ -1197,7 +1167,6 @@ def test_push_event_from_planning(client, app):
     assert parsed['dates']['end'].isoformat() == event['dates']['end'].replace('0000', '00:00')
 
 
-@fixture
 def test_coverages_delivery_sequence_has_default(client, app):
     event = deepcopy(test_event)
     event['guid'] = 'foo7'
@@ -1222,7 +1191,6 @@ def test_coverages_delivery_sequence_has_default(client, app):
     assert parsed['coverages'][0]['deliveries'][0]['sequence_no'] == 0
 
 
-@fixture
 def test_item_planning_reference_set_on_fulfill(client, app):
     planning = deepcopy(test_planning)
     planning['guid'] = 'bar1'
