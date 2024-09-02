@@ -176,13 +176,10 @@ class ArticleBodyHtml extends React.PureComponent {
             return;
         }
 
-        // const startTime = Date.now();
 
         const loadHandler = () => {
-            // const loadTime = Date.now() - startTime;
             if (player.media.videoWidth === 0 && player.media.videoHeight === 0) {
                 if (!player.poster) {
-                    // } else {
                     player.poster = fallbackDefault;
                 }
             } else {
