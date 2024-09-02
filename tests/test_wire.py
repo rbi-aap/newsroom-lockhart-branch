@@ -63,13 +63,9 @@ def test_share_items(client, app):
     assert str(user_id) in data['shares']
 
 
-def get_bookmarks_count(client, user):
-    with client.session_transaction() as session:
-        session['user'] = user
-        session['user_type'] = 'public'
-
-    resp = client.get('/api/wire_search?bookmarks=%s' % str(user))
-    assert resp.status_code == 200
+def get_bookmarks_count(client, user_id):
+    resp = client.get('/api/wire_search?bookmarks=%s' % str(user_id))
+    assert resp.status_code == 200, f"Expected 200, got {resp.status_code}. Response: {resp.data}"
     data = json.loads(resp.get_data())
     return data['_meta']['total']
 
@@ -77,6 +73,10 @@ def get_bookmarks_count(client, user):
 def test_bookmarks(client, app):
     user_id = get_admin_user_id(app)
     assert user_id
+
+    with client.session_transaction() as session:
+        session['user'] = str(user_id)
+        session['user_type'] = 'administrator'
 
     assert 0 == get_bookmarks_count(client, user_id)
 
@@ -87,7 +87,7 @@ def test_bookmarks(client, app):
 
     assert 1 == get_bookmarks_count(client, user_id)
 
-    client.delete('/wire_bookmark', data=json.dumps({
+    resp = client.delete('/wire_bookmark', data=json.dumps({
         'items': [items[0]['_id']],
     }), content_type='application/json')
     assert resp.status_code == 200
@@ -592,16 +592,13 @@ def test_search_by_products_and_filtered_by_embargoe(client, app):
         'products': [{'code': '10'}]
     }])
 
-    # with app.test_request_context():
     mock_user = {'_id': 'test_user_id', 'user_type': 'administrator'}
 
-    # Use a context manager to patch get_user
     with patch('newsroom.wire.search.get_user') as mock_get_user:
         mock_get_user.return_value = mock_user
         items = get_resource_service('wire_search').get_product_items(10, 20)
         assert 0 == len(items)
 
-    # ex-embargoed item is fetched
     app.data.insert('items', [{
         '_id': 'bar',
         'headline': 'china story',
