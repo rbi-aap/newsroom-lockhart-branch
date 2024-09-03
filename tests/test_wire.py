@@ -114,15 +114,15 @@ def test_bookmarks_by_section(client, app):
     assert product_id == 1
 
     with client.session_transaction() as session:
-        session['user'] = '59b4c5c61d41c8d736852fbf'
-        session['user_type'] = 'public'
+        session['user'] = str(ADMIN_USER_ID)
+        session['user_type'] = 'administrator'
 
     with client.session_transaction() as session:
         print(f"Session user: {session.get('user')}")
         print(f"Session user type: {session.get('user_type')}")
 
     with client:
-        initial_count = get_bookmarks_count(client, PUBLIC_USER_ID)
+        initial_count = get_bookmarks_count(client, ADMIN_USER_ID)
         assert initial_count == 0, f"Expected 0 bookmarks, got {initial_count}"
 
         resp = client.post('/wire_bookmark',
@@ -132,7 +132,7 @@ def test_bookmarks_by_section(client, app):
                            content_type='application/json')
         assert resp.status_code == 200, f"Expected 200, got {resp.status_code}. Response: {resp.data}"
 
-        new_count = get_bookmarks_count(client, PUBLIC_USER_ID)
+        new_count = get_bookmarks_count(client, ADMIN_USER_ID)
         assert new_count == 1, f"Expected 1 bookmark, got {new_count}"
 
         resp = client.delete('/wire_bookmark',
@@ -142,7 +142,7 @@ def test_bookmarks_by_section(client, app):
                              content_type='application/json')
         assert resp.status_code == 200, f"Expected 200, got {resp.status_code}. Response: {resp.data}"
 
-        final_count = get_bookmarks_count(client, PUBLIC_USER_ID)
+        final_count = get_bookmarks_count(client, ADMIN_USER_ID)
         assert final_count == 0, f"Expected 0 bookmarks, got {final_count}"
 
 
