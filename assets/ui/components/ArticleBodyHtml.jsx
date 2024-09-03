@@ -115,7 +115,7 @@ class ArticleBodyHtml extends React.PureComponent {
     }
 
 
-     executeScripts() {
+    executeScripts() {
         const tree = this.bodyRef.current;
         const loaded = [];
 
@@ -166,6 +166,7 @@ class ArticleBodyHtml extends React.PureComponent {
             }
         });
     }
+
     setupPlyrPlayers() {
         const tree = this.bodyRef.current;
         if (tree == null || window.Plyr == null) {
@@ -268,8 +269,8 @@ class ArticleBodyHtml extends React.PureComponent {
             .filter((value) => value);
 
         if (!imageEmbedOriginalIds.length) {
-           // This item has no Image Embeds
-           // return the supplied html as-is
+            // This item has no Image Embeds
+            // return the supplied html as-is
             return html;
         }
 
@@ -282,7 +283,7 @@ class ArticleBodyHtml extends React.PureComponent {
         container
             .querySelectorAll('img,video,audio')
             .forEach((imageTag) => {
-               // Using the tag's `src` attribute, find the Original Rendition's ID
+                // Using the tag's `src` attribute, find the Original Rendition's ID
                 const originalMediaId = imageEmbedOriginalIds.find((mediaId) => (
                     !imageTag.src.startsWith('/assets/') &&
                     imageTag.src.includes(mediaId))
