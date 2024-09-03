@@ -94,6 +94,7 @@ def test_bookmarks(client, app):
 
     assert 0 == get_bookmarks_count(client, user_id)
 
+
 def test_bookmarks_by_section(client, app):
     products = [
         {
@@ -143,6 +144,7 @@ def test_bookmarks_by_section(client, app):
 
         final_count = get_bookmarks_count(client, PUBLIC_USER_ID)
         assert final_count == 0, f"Expected 0 bookmarks, got {final_count}"
+
 
 def test_item_copy(client, app):
     resp = client.post('/wire/{}/copy'.format(items[0]['_id']), content_type='application/json')
