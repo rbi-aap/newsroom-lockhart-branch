@@ -94,7 +94,6 @@ def test_bookmarks(client, app):
 
     assert 0 == get_bookmarks_count(client, user_id)
 
-
 def test_bookmarks_by_section(client, app):
     products = [
         {
@@ -114,25 +113,36 @@ def test_bookmarks_by_section(client, app):
     assert product_id == 1
 
     with client.session_transaction() as session:
-        session['user'] = '59b4c5c61d41c8d736852fbf'
+        session['user'] = str(PUBLIC_USER_ID)
         session['user_type'] = 'public'
 
-    assert 0 == get_bookmarks_count(client, PUBLIC_USER_ID)
+    with client.session_transaction() as session:
+        print(f"Session user: {session.get('user')}")
+        print(f"Session user type: {session.get('user_type')}")
 
-    resp = client.post('/wire_bookmark', data=json.dumps({
-        'items': [items[0]['_id']],
-    }), content_type='application/json')
-    assert resp.status_code == 200
+    with client:
+        initial_count = get_bookmarks_count(client, PUBLIC_USER_ID)
+        assert initial_count == 0, f"Expected 0 bookmarks, got {initial_count}"
 
-    assert 1 == get_bookmarks_count(client, PUBLIC_USER_ID)
+        resp = client.post('/wire_bookmark',
+                           data=json.dumps({
+                               'items': [items[0]['_id']],
+                           }),
+                           content_type='application/json')
+        assert resp.status_code == 200, f"Expected 200, got {resp.status_code}. Response: {resp.data}"
 
-    client.delete('/wire_bookmark', data=json.dumps({
-        'items': [items[0]['_id']],
-    }), content_type='application/json')
-    assert resp.status_code == 200
+        new_count = get_bookmarks_count(client, PUBLIC_USER_ID)
+        assert new_count == 1, f"Expected 1 bookmark, got {new_count}"
 
-    assert 0 == get_bookmarks_count(client, PUBLIC_USER_ID)
+        resp = client.delete('/wire_bookmark',
+                             data=json.dumps({
+                                 'items': [items[0]['_id']],
+                             }),
+                             content_type='application/json')
+        assert resp.status_code == 200, f"Expected 200, got {resp.status_code}. Response: {resp.data}"
 
+        final_count = get_bookmarks_count(client, PUBLIC_USER_ID)
+        assert final_count == 0, f"Expected 0 bookmarks, got {final_count}"
 
 def test_item_copy(client, app):
     resp = client.post('/wire/{}/copy'.format(items[0]['_id']), content_type='application/json')
