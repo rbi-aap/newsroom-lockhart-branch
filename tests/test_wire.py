@@ -114,7 +114,7 @@ def test_bookmarks_by_section(client, app):
     assert product_id == 1
 
     with client.session_transaction() as session:
-        session['user'] = str(PUBLIC_USER_ID)
+        session['user'] = '59b4c5c61d41c8d736852fbf'
         session['user_type'] = 'public'
 
     with client.session_transaction() as session:
