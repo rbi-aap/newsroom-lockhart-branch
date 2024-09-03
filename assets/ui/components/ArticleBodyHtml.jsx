@@ -6,7 +6,7 @@ import {connect} from 'react-redux';
 import {selectCopy} from '../../wire/actions';
 import DOMPurify from 'dompurify';
 
-const fallbackDefault = 'https://scontent.fsyd3-1.fna.fbcdn.net/v/t39.30808-6/409650761_846997544097330_4773850429743120820_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=127cfc&_nc_ohc=j6x9FL3TtcoQ7kNvgF9emTy&_nc_ht=scontent.fsyd3-1.fna&_nc_gid=ALgZM2NojeFY-L80j-LAA9M&oh=00_AYC6Y4pRTB22E1bRF1fqHDMfDpkcfNmBtIrAkRxTX08xEA&oe=66D338BF';
+const fallbackDefault = 'https://storage.googleapis.com/pw-prod-aap-website-bkt/test/aap_poster_default.jpg';
 
 class ArticleBodyHtml extends React.PureComponent {
     constructor(props) {
@@ -28,6 +28,7 @@ class ArticleBodyHtml extends React.PureComponent {
         this.updateSanitizedHtml();
         this.loadIframely();
         this.setupPlyrPlayers();
+        this.executeScripts();
         document.addEventListener('copy', this.copyClicked);
         document.addEventListener('click', this.clickClicked);
         this.addContextMenuEventListeners();
@@ -39,6 +40,7 @@ class ArticleBodyHtml extends React.PureComponent {
             this.updateSanitizedHtml();
         }
         this.loadIframely();
+        this.executeScripts();
         this.setupPlyrPlayers();
         this.addContextMenuEventListeners();
     }
@@ -112,6 +114,58 @@ class ArticleBodyHtml extends React.PureComponent {
         }
     }
 
+
+     executeScripts() {
+        const tree = this.bodyRef.current;
+        const loaded = [];
+
+        if (tree == null) {
+            return;
+        }
+
+        tree.querySelectorAll('script').forEach((s) => {
+            if (s.hasAttribute('src') && !loaded.includes(s.getAttribute('src'))) {
+                let url = s.getAttribute('src');
+
+                loaded.push(url);
+
+                if (url.includes('twitter.com/') && window.twttr != null) {
+                    window.twttr.widgets.load();
+                    return;
+                }
+
+                if (url.includes('instagram.com/') && window.instgrm != null) {
+                    window.instgrm.Embeds.process();
+                    return;
+                }
+
+                // Force Flourish to always load
+                if (url.includes('flourish.studio/')) {
+                    delete window.FlourishLoaded;
+                }
+
+                if (url.startsWith('http')) {
+                    // change https?:// to // so it uses schema of the client
+                    url = url.substring(url.indexOf(':') + 1);
+                }
+
+                const script = document.createElement('script');
+
+                script.src = url;
+                script.async = true;
+
+                script.onload = () => {
+                    document.body.removeChild(script);
+                };
+
+                script.onerrror = (error) => {
+                    throw new URIError('The script ' + error.target.src + 'didn\'t load.');
+                };
+
+                document.body.appendChild(script);
+            }
+        });
+    }
     setupPlyrPlayers() {
         const tree = this.bodyRef.current;
         if (tree == null || window.Plyr == null) {
@@ -206,6 +260,7 @@ class ArticleBodyHtml extends React.PureComponent {
     _updateImageEmbedSources(html) {
         const item = this.props.item;
 
+        // Get the list of Original Rendition IDs for all Image Associations
         const imageEmbedOriginalIds = Object
             .keys(item.associations || {})
             .filter((key) => key.startsWith('editor_'))
@@ -213,9 +268,13 @@ class ArticleBodyHtml extends React.PureComponent {
             .filter((value) => value);
 
         if (!imageEmbedOriginalIds.length) {
+           // This item has no Image Embeds
+           // return the supplied html as-is
             return html;
         }
 
+        // Create a DOM node tree from the supplied html
+        // We can then efficiently find and update the image sources
         const container = document.createElement('div');
         let imageSourcesUpdated = false;
 
@@ -223,17 +282,21 @@ class ArticleBodyHtml extends React.PureComponent {
         container
             .querySelectorAll('img,video,audio')
             .forEach((imageTag) => {
+               // Using the tag's `src` attribute, find the Original Rendition's ID
                 const originalMediaId = imageEmbedOriginalIds.find((mediaId) => (
                     !imageTag.src.startsWith('/assets/') &&
                     imageTag.src.includes(mediaId))
                 );
 
                 if (originalMediaId) {
+                    // We now have the Original Rendition's ID
+                    // Use that to update the `src` attribute to use Newshub's Web API
                     imageSourcesUpdated = true;
                     imageTag.src = `/assets/${originalMediaId}`;
                 }
             });
 
+        // Find all Audio and Video tags and mark them up for the player
         container.querySelectorAll('video, audio')
             .forEach((vTag) => {
                 vTag.classList.add('js-player');
@@ -250,6 +313,7 @@ class ArticleBodyHtml extends React.PureComponent {
                 }
                 imageSourcesUpdated = true;
             });
+        // If Image tags were not updated, then return the supplied html as-is
         return imageSourcesUpdated ?
             container.innerHTML :
             html;
