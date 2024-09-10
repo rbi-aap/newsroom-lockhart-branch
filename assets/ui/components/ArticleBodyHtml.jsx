@@ -5,8 +5,8 @@ import {formatHTML} from 'utils';
 import {connect} from 'react-redux';
 import {selectCopy} from '../../wire/actions';
 import DOMPurify from 'dompurify';
-
-const fallbackDefault = 'https://storage.googleapis.com/pw-prod-aap-website-bkt/test/aap_poster_default.jpg';
+// import fallbackDefault from 'images/poster_default.jpg'
+const fallbackDefault = '/static/poster_default.jpg';
 
 class ArticleBodyHtml extends React.PureComponent {
     constructor(props) {
@@ -158,8 +158,9 @@ class ArticleBodyHtml extends React.PureComponent {
                     document.body.removeChild(script);
                 };
 
-                script.onerrror = (error) => {
-                    throw new URIError('The script ' + error.target.src + 'didn\'t load.');
+                script.onerror = (error) => {
+                    console.error('Script load error:', error);
+                    throw new URIError('The script ' + error.target.src + ' didn\'t load.');
                 };
 
                 document.body.appendChild(script);
@@ -230,27 +231,73 @@ class ArticleBodyHtml extends React.PureComponent {
         if (!videoSrc || !videoSrc.startsWith('/assets/')) {
             return;
         }
-
-
         const loadHandler = () => {
-            if (player.media.videoWidth === 0 && player.media.videoHeight === 0) {
-                if (!player.poster) {
-                    player.poster = fallbackDefault;
+            // eslint-disable-next-line no-console
+            console.log('Initial dimensions:', player.media.videoWidth, player.media.videoHeight);
+            const checkVideoContent = () => {
+                if (player.media.videoWidth > 0 && player.media.videoHeight > 0) {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = player.media.videoWidth;
+                    canvas.height = player.media.videoHeight;
+                    const ctx = canvas.getContext('2d');
+
+                    ctx.drawImage(player.media, 0, 0, canvas.width, canvas.height);
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const data = imageData.data;
+                    // loop for none blank pixel
+                    let stepSize = 4; // Adjust the step size as needed
+                    for (let i = 0; i < data.length; i += stepSize * 4) {
+                        if (data[i] > 0 || data[i + 1] > 0 || data[i + 2] > 0) {
+
+                            // eslint-disable-next-line no-console
+                            console.log('Pixel content detected, poster not needed');
+                            return true;
+                        }
+                    }
                 }
-            } else {
-                const isFirstFrameBlack = player.media.videoWidth === 1920 && player.media.videoHeight === 1080;
-                if (!isFirstFrameBlack)
-                    if (!player.poster) {
+                return false;
+            };
+
+            const attemptContentCheck = () => {
+                if (checkVideoContent()) {
+                    player.poster = null;
+                    // eslint-disable-next-line no-console
+                    console.log('Pixel content detected, poster removed');
+                    return true;
+                }
+                return false;
+            };
+
+            let attemptCount = 0;
+            const maxAttempts = 2;
+            const checkInterval = setInterval(() => {
+                if (attemptContentCheck() || attemptCount >= maxAttempts) {
+                    clearInterval(checkInterval);
+                    player.off('loadeddata', loadHandler);
+
+                    if (attemptCount >= maxAttempts) {
+                        console.warn('Setting fallback poster');
                         player.poster = fallbackDefault;
                     }
-            }
-            player.off('loadeddata', loadHandler);
+                }
+                attemptCount++;
+            }, 500);
         };
 
+        player.on('error', (error) => {
+            console.error('Error details:', {
+                message: error.message,
+                code: error.code,
+                type: error.type,
+                target: error.target,
+                currentTarget: error.currentTarget,
+                originalTarget: error.originalTarget,
+                error: error.error
+            });
+            player.poster = fallbackDefault;
+        });
         player.on('loadeddata', loadHandler);
-
     }
-
 
     _getBodyHTML(bodyHtml) {
         return !bodyHtml ?
@@ -261,7 +308,6 @@ class ArticleBodyHtml extends React.PureComponent {
     _updateImageEmbedSources(html) {
         const item = this.props.item;
 
-        // Get the list of Original Rendition IDs for all Image Associations
         const imageEmbedOriginalIds = Object
             .keys(item.associations || {})
             .filter((key) => key.startsWith('editor_'))
@@ -269,13 +315,9 @@ class ArticleBodyHtml extends React.PureComponent {
             .filter((value) => value);
 
         if (!imageEmbedOriginalIds.length) {
-            // This item has no Image Embeds
-            // return the supplied html as-is
             return html;
         }
 
-        // Create a DOM node tree from the supplied html
-        // We can then efficiently find and update the image sources
         const container = document.createElement('div');
         let imageSourcesUpdated = false;
 
@@ -283,21 +325,17 @@ class ArticleBodyHtml extends React.PureComponent {
         container
             .querySelectorAll('img,video,audio')
             .forEach((imageTag) => {
-                // Using the tag's `src` attribute, find the Original Rendition's ID
                 const originalMediaId = imageEmbedOriginalIds.find((mediaId) => (
                     !imageTag.src.startsWith('/assets/') &&
                     imageTag.src.includes(mediaId))
                 );
 
                 if (originalMediaId) {
-                    // We now have the Original Rendition's ID
-                    // Use that to update the `src` attribute to use Newshub's Web API
                     imageSourcesUpdated = true;
                     imageTag.src = `/assets/${originalMediaId}`;
                 }
             });
 
-        // Find all Audio and Video tags and mark them up for the player
         container.querySelectorAll('video, audio')
             .forEach((vTag) => {
                 vTag.classList.add('js-player');
@@ -314,7 +352,6 @@ class ArticleBodyHtml extends React.PureComponent {
                 }
                 imageSourcesUpdated = true;
             });
-        // If Image tags were not updated, then return the supplied html as-is
         return imageSourcesUpdated ?
             container.innerHTML :
             html;
@@ -326,7 +363,6 @@ class ArticleBodyHtml extends React.PureComponent {
             if (target && target.tagName === 'A' && this.isLinkExternal(target.href)) {
                 event.preventDefault();
                 event.stopPropagation();
-
                 const nextWindow = window.open(target.href, '_blank', 'noopener');
 
                 if (nextWindow) {
