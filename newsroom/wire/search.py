@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta
 from copy import deepcopy
 from eve.utils import ParsedRequest, config
@@ -18,9 +19,8 @@ from newsroom.auth import get_user
 from newsroom.companies import get_user_company
 from newsroom.products.products import get_products_by_company
 from newsroom.wire.block_media.filter_media import filter_media
-from superdesk.logging import logger
 
-# logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def get_bookmarks_count(user_id, product_type):

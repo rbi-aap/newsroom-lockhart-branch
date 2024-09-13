@@ -175,7 +175,7 @@ def update_company(data, _id):
 @account_manager_only
 def save_company_permissions(_id):
     csrf_token = request.headers.get('X-CSRF-Token')
-    expected_csrf_token = session.get('csrf_token')
+    expected_csrf_token = session.pop('csrf_token')
     orig = get_entity_or_404(_id, 'companies')
     data = get_json_or_400()
     if not csrf_token or csrf_token != expected_csrf_token:

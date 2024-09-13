@@ -5,7 +5,6 @@ import {formatHTML} from 'utils';
 import {connect} from 'react-redux';
 import {selectCopy} from '../../wire/actions';
 import DOMPurify from 'dompurify';
-// import fallbackDefault from 'images/poster_default.jpg'
 const fallbackDefault = '/static/poster_default.jpg';
 
 class ArticleBodyHtml extends React.PureComponent {
@@ -13,7 +12,6 @@ class ArticleBodyHtml extends React.PureComponent {
         super(props);
         this.state = {
             sanitizedHtml: '',
-            memoryUsage: null
         };
         this.copyClicked = this.copyClicked.bind(this);
         this.clickClicked = this.clickClicked.bind(this);
@@ -21,7 +19,6 @@ class ArticleBodyHtml extends React.PureComponent {
         this.getBodyHTML = memoize(this._getBodyHTML.bind(this));
         this.bodyRef = React.createRef();
         this.players = new Map();
-        this.memoryInterval = null;
     }
 
     componentDidMount() {
@@ -53,9 +50,9 @@ class ArticleBodyHtml extends React.PureComponent {
         this.players.forEach(player => player.destroy());
         this.players.clear();
 
-        if (this.memoryInterval) {
-            clearInterval(this.memoryInterval);
-        }
+        // if (this.memoryInterval) {
+        //     clearInterval(this.memoryInterval);
+        // }
     }
 
     startMemoryUsageTracking() {
@@ -232,8 +229,6 @@ class ArticleBodyHtml extends React.PureComponent {
             return;
         }
         const loadHandler = () => {
-            // eslint-disable-next-line no-console
-            console.log('Initial dimensions:', player.media.videoWidth, player.media.videoHeight);
             const checkVideoContent = () => {
                 if (player.media.videoWidth > 0 && player.media.videoHeight > 0) {
                     const canvas = document.createElement('canvas');
@@ -245,12 +240,10 @@ class ArticleBodyHtml extends React.PureComponent {
                     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                     const data = imageData.data;
                     // loop for none blank pixel
-                    let stepSize = 4; // Adjust the step size as needed
+                    let stepSize = 8; // Adjust the step size
                     for (let i = 0; i < data.length; i += stepSize * 4) {
                         if (data[i] > 0 || data[i + 1] > 0 || data[i + 2] > 0) {
-
-                            // eslint-disable-next-line no-console
-                            console.log('Pixel content detected, poster not needed');
+                            console.warn('Pixel content detected, poster not needed');
                             return true;
                         }
                     }
@@ -261,15 +254,14 @@ class ArticleBodyHtml extends React.PureComponent {
             const attemptContentCheck = () => {
                 if (checkVideoContent()) {
                     player.poster = null;
-                    // eslint-disable-next-line no-console
-                    console.log('Pixel content detected, poster removed');
+                    console.warn('Pixel content detected, poster removed');
                     return true;
                 }
                 return false;
             };
 
             let attemptCount = 0;
-            const maxAttempts = 2;
+            const maxAttempts = 1;
             const checkInterval = setInterval(() => {
                 if (attemptContentCheck() || attemptCount >= maxAttempts) {
                     clearInterval(checkInterval);
@@ -285,7 +277,7 @@ class ArticleBodyHtml extends React.PureComponent {
         };
 
         player.on('error', (error) => {
-            console.error('Error details:', {
+            console.error('Error details and location:', {
                 message: error.message,
                 code: error.code,
                 type: error.type,

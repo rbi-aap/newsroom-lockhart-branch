@@ -9,7 +9,24 @@ logger = logging.getLogger(__name__)
 
 
 def filter_items_download(func):
+    """
+     A decorator that filters downloaded items based on a given filter function.
+
+    :param func: The function to be decorated. It should take _ids and item_type as parameters
+                     and return a list of items.
+    :return: A wrapper function that adds filtering capability to the decorated function.
+    """
     def wrapper(_ids, item_type, filter_func=None):
+        """
+        Wrapper function that calls the decorated function and applies optional filtering.
+
+        :param _ids: List of IDs to download items for.
+        :param item_type: Type of items to download .
+        :param filter_func: Optional function to filter the downloaded items.
+                                    default is None, no filtering is applied.
+        :return: A list of downloaded items, potentially filtered if a filter_func is provided
+                         and the item_type is not 'agenda'.
+        """
         items = func(_ids, item_type)
         if filter_func and items and (item_type != 'agenda'):
             items = filter_func(items)
