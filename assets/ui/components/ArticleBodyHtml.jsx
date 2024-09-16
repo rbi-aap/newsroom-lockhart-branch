@@ -29,7 +29,6 @@ class ArticleBodyHtml extends React.PureComponent {
         document.addEventListener('copy', this.copyClicked);
         document.addEventListener('click', this.clickClicked);
         this.addContextMenuEventListeners();
-        // this.startMemoryUsageTracking();
     }
 
     componentDidUpdate(prevProps) {
@@ -49,25 +48,6 @@ class ArticleBodyHtml extends React.PureComponent {
 
         this.players.forEach(player => player.destroy());
         this.players.clear();
-
-        // if (this.memoryInterval) {
-        //     clearInterval(this.memoryInterval);
-        // }
-    }
-
-    startMemoryUsageTracking() {
-        if (window.performance && window.performance.memory) {
-            this.memoryInterval = setInterval(() => {
-                const memoryInfo = window.performance.memory;
-                this.setState({
-                    memoryUsage: {
-                        usedJSHeapSize: memoryInfo.usedJSHeapSize / (1024 * 1024),
-                        totalJSHeapSize: memoryInfo.totalJSHeapSize / (1024 * 1024),
-                        jsHeapSizeLimit: memoryInfo.jsHeapSizeLimit / (1024 * 1024)
-                    }
-                });
-            }, 2000);
-        }
     }
 
     updateSanitizedHtml() {
@@ -240,7 +220,7 @@ class ArticleBodyHtml extends React.PureComponent {
                     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                     const data = imageData.data;
                     // loop for none blank pixel
-                    let stepSize = 8; // Adjust the step size
+                    let stepSize = 10; // Adjust the step size
                     for (let i = 0; i < data.length; i += stepSize * 4) {
                         if (data[i] > 0 || data[i + 1] > 0 || data[i + 2] > 0) {
                             console.warn('Pixel content detected, poster not needed');
